@@ -1,6 +1,6 @@
 export const GAME_NAME = '\u8bc1\u660e\u4f60\u662f\u4eba\u7c7b';
-export const GAME_NAME_EN = 'PROVE YOU ARE HUMAN';
-export const GAME_SUBTITLE = 'Mock Verification Prototype';
+export const GAME_NAME_EN = '证明你是人类';
+export const GAME_SUBTITLE = '荒诞验证原型';
 export const SAVE_STORAGE_KEY = 'prove-human.save.v1';
 export const SAVE_DATA_VERSION = 1;
 export const TRIAL_LEVEL_COUNT = 3;

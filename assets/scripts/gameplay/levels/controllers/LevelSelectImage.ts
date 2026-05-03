@@ -92,10 +92,10 @@ export class LevelSelectImage extends BaseLevelController<SelectImageLevelConfig
 
         if (hasExactMatch) {
             return this.buildSuccessResult(
-                'Only clearly visible traffic lights were selected.',
+                '只选择了清晰可见的红绿灯。',
                 [
-                    `Accepted tiles: ${this.describeIndexes(correctIndexes)}.`,
-                    'Strict filter satisfied: cropped signals and lookalikes were excluded.',
+                    `已接受格子：${this.describeIndexes(correctIndexes)}。`,
+                    '严格筛选通过：裁切信号和相似物都已排除。',
                 ].join(' '),
                 {
                     reasonKey: 'exact-match',
@@ -105,11 +105,11 @@ export class LevelSelectImage extends BaseLevelController<SelectImageLevelConfig
 
         if (selectedIndexes.length === 0) {
             return this.buildFailureResult(
-                'No qualifying traffic-light tiles were selected.',
+                '没有选择任何符合条件的红绿灯格子。',
                 [
-                    `Prompt: ${config.systemPrompt}`,
-                    'The system expected every clearly visible traffic light tile and received no submission.',
-                    `Rule: ${config.absurdRule}`,
+                    `提示：${config.systemPrompt}`,
+                    '系统要求选中每一个清晰可见的红绿灯格子，但没有收到有效选择。',
+                    `规则：${config.absurdRule}`,
                 ].join(' '),
                 {
                     reasonKey: 'no-selection',
@@ -120,26 +120,26 @@ export class LevelSelectImage extends BaseLevelController<SelectImageLevelConfig
         const detailParts: string[] = [];
 
         if (missingCorrectSelections.length > 0) {
-            detailParts.push(`Missing clear traffic lights: ${this.describeIndexes(missingCorrectSelections)}.`);
+            detailParts.push(`遗漏了清晰红绿灯：${this.describeIndexes(missingCorrectSelections)}。`);
         }
 
         if (ambiguousSelections.length > 0) {
             detailParts.push(
-                `Rejected partial or distant signal fragments: ${this.describeIndexes(ambiguousSelections)}. Edge exposures do not count.`,
+                `已拒绝残缺或远处信号片段：${this.describeIndexes(ambiguousSelections)}。边缘露出不算。`,
             );
         }
 
         if (decoySelections.length > 0) {
             detailParts.push(
-                `Rejected lookalikes or ordinary street scenes: ${this.describeIndexes(decoySelections)}. Similar shapes do not count.`,
+                `已拒绝相似物或普通街景：${this.describeIndexes(decoySelections)}。形状相似不算。`,
             );
         }
 
         if (detailParts.length === 0) {
-            detailParts.push('The selected tiles did not satisfy the exact strict-match rule.');
+            detailParts.push('当前选择不满足严格匹配规则。');
         }
 
-        detailParts.push(`System rule: ${config.absurdRule}`);
+        detailParts.push(`系统规则：${config.absurdRule}`);
 
         const summaryText = this.buildFailureSummary(
             missingCorrectSelections.length > 0,
@@ -189,32 +189,32 @@ export class LevelSelectImage extends BaseLevelController<SelectImageLevelConfig
         const options = this.requireConfig().payload.options;
 
         return indexes
-            .map((index) => options[index]?.title ?? `TILE ${index + 1}`)
+            .map((index) => options[index]?.title ?? `格子 ${index + 1}`)
             .join(', ');
     }
 
     private buildFailureSummary(hasMissingCorrect: boolean, hasAmbiguous: boolean, hasDecoy: boolean): string {
         if (hasMissingCorrect && (hasAmbiguous || hasDecoy)) {
-            return 'The selection missed valid traffic lights and included invalid tiles.';
+            return '选择遗漏了有效红绿灯，同时包含了无效格子。';
         }
 
         if (hasMissingCorrect) {
-            return 'Some clearly visible traffic lights were left unselected.';
+            return '有清晰可见的红绿灯没有被选中。';
         }
 
         if (hasAmbiguous && hasDecoy) {
-            return 'The selection included both cropped signals and misleading lookalikes.';
+            return '选择同时包含裁切信号和误导性相似物。';
         }
 
         if (hasAmbiguous) {
-            return 'Cropped or distant traffic-light fragments were incorrectly selected.';
+            return '裁切或远处的红绿灯片段被错误选中。';
         }
 
         if (hasDecoy) {
-            return 'Lookalike objects or ordinary street scenes were incorrectly selected.';
+            return '相似物或普通街景被错误选中。';
         }
 
-        return 'The system rejected the submitted tile combination.';
+        return '系统拒绝了提交的格子组合。';
     }
 
     private buildFailureReasonKey(hasMissingCorrect: boolean, hasAmbiguous: boolean, hasDecoy: boolean): string {

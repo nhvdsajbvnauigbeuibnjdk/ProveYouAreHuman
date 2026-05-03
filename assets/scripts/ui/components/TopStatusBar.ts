@@ -1,5 +1,4 @@
 import { _decorator, Label, Sprite } from 'cc';
-import { GAME_NAME_EN } from '../../data/GameConst';
 import { calculateHumanIndex, formatLevelCode } from '../../data/ProgressDisplay';
 import { SaveData } from '../../data/SaveData';
 import { BasePanel } from '../base/BasePanel';
@@ -40,7 +39,24 @@ export class TopStatusBar extends BasePanel {
         applyLabelTone(this.failureCountLabel, 'danger');
 
         if (this.systemNameLabel) {
-            this.systemNameLabel.string = `${GAME_NAME_EN} / TRIAL BUILD`;
+            this.systemNameLabel.string = '';
+            this.systemNameLabel.node.active = false;
+        }
+
+        if (this.sceneStateLabel) {
+            this.sceneStateLabel.string = '当前：启动中';
+        }
+
+        if (this.currentLevelLabel) {
+            this.currentLevelLabel.string = '关卡：第 1 关';
+        }
+
+        if (this.humanIndexLabel) {
+            this.humanIndexLabel.string = '成功：--';
+        }
+
+        if (this.failureCountLabel) {
+            this.failureCountLabel.string = '失败：--';
         }
     }
 
@@ -53,19 +69,19 @@ export class TopStatusBar extends BasePanel {
         const humanIndex = calculateHumanIndex(saveData);
 
         if (this.sceneStateLabel) {
-            this.sceneStateLabel.string = currentStatusText;
+            this.sceneStateLabel.string = `当前：${currentStatusText}`;
         }
 
         if (this.currentLevelLabel) {
-            this.currentLevelLabel.string = `LEVEL ${formatLevelCode(currentLevelId)}`;
+            this.currentLevelLabel.string = `关卡：${formatLevelCode(currentLevelId)}`;
         }
 
         if (this.humanIndexLabel) {
-            this.humanIndexLabel.string = `HUMAN ${humanIndex}`;
+            this.humanIndexLabel.string = `成功：${humanIndex}`;
         }
 
         if (this.failureCountLabel) {
-            this.failureCountLabel.string = `FAIL ${saveData.stats.totalFailures}`;
+            this.failureCountLabel.string = `失败：${saveData.stats.totalFailures}`;
         }
 
         applyAccentStyle(this.statusDotSprite, currentStatusTone);

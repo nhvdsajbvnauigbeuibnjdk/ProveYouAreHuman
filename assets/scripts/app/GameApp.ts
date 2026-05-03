@@ -53,7 +53,7 @@ export class GameApp extends Component {
 
     private currentLevelId = 1;
     private lastResult: LevelResultType = LevelResultType.None;
-    private topStatusText = 'SYSTEM BOOT COMPLETE';
+    private topStatusText = '系统启动完成';
     private topStatusTone: UiTone = 'success';
 
     protected onLoad(): void {
@@ -135,13 +135,16 @@ export class GameApp extends Component {
     }
 
     private openMainMenu(): void {
+        console.log('[GameApp] enter menu');
+        this.verifyView?.clearLevel();
+        this.resultPopup?.resetContent();
         this.mainMenuView?.refresh(this.saveManager.getSaveData(), this.configManager.getLevelCount());
-        this.uiManager.closeAllPopups();
         this.uiManager.showPage(UIPageId.MainMenu);
-        this.updateTopStatus('MAIN MENU READY', 'success');
+        this.updateTopStatus('主菜单', 'success');
     }
 
     private startGame(): void {
+        console.log('[GameApp] start verify');
         const saveData = this.saveManager.getSaveData();
         const startLevelId = Math.max(1, Math.min(saveData.selectedLevelId, saveData.highestUnlockedLevelId));
         this.enterLevel(startLevelId);
@@ -157,10 +160,12 @@ export class GameApp extends Component {
 
         this.currentLevelId = level.id;
         this.saveManager.selectLevel(level.id);
-        this.verifyView?.loadLevel(level, this.configManager.getJudgeText('menu_intro'), this.configManager.getNextLevel(level.id)?.id ?? null);
-        this.uiManager.closeAllPopups();
+        console.log(`[GameApp] load level: ${level.id} / ${level.key}`);
+        this.resultPopup?.resetContent();
         this.uiManager.showPage(UIPageId.Verify);
-        this.updateTopStatus(`VERIFY SCREEN READY / ${level.menuTitle}`, 'neutral');
+        this.verifyView?.loadLevel(level, this.configManager.getJudgeText('menu_intro'), this.configManager.getNextLevel(level.id)?.id ?? null);
+        this.verifyView?.setPlayingInteractionEnabled(true);
+        this.updateTopStatus(`第 ${level.id} 关就绪`, 'neutral');
     }
 
     private handleLevelValidated(event: VerifyLevelResultEvent): void {
@@ -199,9 +204,11 @@ export class GameApp extends Component {
         );
 
         this.resultPopup?.refresh(content);
+        this.verifyView?.setPlayingInteractionEnabled(false);
         this.uiManager.openPopup(UIPopupId.Result);
+        console.log('[GameApp] show result');
         this.updateTopStatus(
-            event.result.resultType === LevelResultType.Success ? 'RESULT POPUP / PASS' : 'RESULT POPUP / FAIL',
+            event.result.resultType === LevelResultType.Success ? '验证成功' : '验证失败',
             event.result.resultType === LevelResultType.Success ? 'success' : 'danger',
         );
     }
@@ -217,23 +224,23 @@ export class GameApp extends Component {
         const safeResult = result.resultType === LevelResultType.Success ? LevelResultType.Success : LevelResultType.Failure;
         const systemNoteParts = [
             judgeText?.lines.join(' '),
-            `HUMAN INDEX ${outcomeSummary.humanScore} (${outcomeSummary.humanScoreDelta >= 0 ? '+' : ''}${outcomeSummary.humanScoreDelta}) / ${outcomeSummary.humanScoreDescription}`,
+            `成功指数 ${outcomeSummary.humanScore}（${outcomeSummary.humanScoreDelta >= 0 ? '+' : ''}${outcomeSummary.humanScoreDelta}）/ ${outcomeSummary.humanScoreDescription}`,
             safeResult === LevelResultType.Failure
-                ? `FAILURES ${outcomeSummary.totalFailures} / LEVEL ${outcomeSummary.levelFailures} / STREAK ${outcomeSummary.consecutiveFailures}`
-                : (outcomeSummary.isFirstClear ? 'FIRST CLEAR BONUS APPLIED.' : 'CLEAR RECORDED.'),
+                ? `失败 ${outcomeSummary.totalFailures} / 本关 ${outcomeSummary.levelFailures} / 连续 ${outcomeSummary.consecutiveFailures}`
+                : (outcomeSummary.isFirstClear ? '首次通过奖励已记录。' : '通关记录已更新。'),
         ].filter((item): item is string => Boolean(item));
 
         return {
             resultType: safeResult,
-            title: safeResult === LevelResultType.Success ? `${level.menuTitle} / PASS` : `${level.menuTitle} / FAIL`,
+            title: safeResult === LevelResultType.Success ? '验证成功' : '验证失败',
             message: result.message,
             absurdRule: result.absurdRule,
             aiJudgeText,
             systemNote: systemNoteParts.join('\n'),
             primaryButtonText: safeResult === LevelResultType.Success
-                ? (nextLevelId !== null ? 'NEXT LEVEL' : 'BACK TO MENU')
-                : 'RETRY',
-            secondaryButtonText: 'BACK TO MENU',
+                ? (nextLevelId !== null ? '下一关' : '返回主菜单')
+                : '重试',
+            secondaryButtonText: '返回主菜单',
         };
     }
 
@@ -242,7 +249,9 @@ export class GameApp extends Component {
 
         if (action.type === 'retry-current') {
             this.uiManager.closePopup(UIPopupId.Result);
-            this.updateTopStatus(`VERIFY SCREEN READY / LEVEL ${this.currentLevelId}`, 'neutral');
+            this.resultPopup?.resetContent();
+            this.verifyView?.setPlayingInteractionEnabled(true);
+            this.updateTopStatus(`第 ${this.currentLevelId} 关就绪`, 'neutral');
             return;
         }
 
@@ -255,34 +264,37 @@ export class GameApp extends Component {
     }
 
     private returnToMenu(): void {
+        console.log('[GameApp] back to menu');
         this.openMainMenu();
     }
 
     private openSettings(): void {
+        console.log('[GameApp] open settings');
         this.settingsPopup?.refresh(this.audioManager.getSettings());
         this.uiManager.openPopup(UIPopupId.Settings);
-        this.updateTopStatus('SETTINGS PANEL OPEN', 'warning');
+        this.updateTopStatus('设置', 'warning');
     }
 
     private closeSettings(): void {
+        console.log('[GameApp] close settings');
         this.uiManager.closePopup(UIPopupId.Settings);
         this.syncTopStatusFromUiState();
     }
 
     private adjustBgm(delta: number): void {
-        this.applySettings(this.audioManager.adjustBgmVolume(delta), 'SETTINGS / BGM UPDATED');
+        this.applySettings(this.audioManager.adjustBgmVolume(delta), '设置 / 音乐已更新');
     }
 
     private adjustSfx(delta: number): void {
-        this.applySettings(this.audioManager.adjustSfxVolume(delta), 'SETTINGS / SFX UPDATED');
+        this.applySettings(this.audioManager.adjustSfxVolume(delta), '设置 / 音效已更新');
     }
 
     private toggleMute(): void {
-        this.applySettings(this.audioManager.toggleMute(), 'SETTINGS / SOUND TOGGLED');
+        this.applySettings(this.audioManager.toggleMute(), '设置 / 声音已切换');
     }
 
     private toggleVibration(): void {
-        this.applySettings(this.audioManager.toggleVibration(), 'SETTINGS / VIBRATION TOGGLED');
+        this.applySettings(this.audioManager.toggleVibration(), '设置 / 震动已切换');
     }
 
     private resetProgress(): void {
@@ -303,18 +315,18 @@ export class GameApp extends Component {
     private syncTopStatusFromUiState(): void {
         if (this.uiManager.isPopupOpen(UIPopupId.Result)) {
             this.updateTopStatus(
-                this.lastResult === LevelResultType.Success ? 'RESULT POPUP / PASS' : 'RESULT POPUP / FAIL',
+                this.lastResult === LevelResultType.Success ? '验证成功' : '验证失败',
                 this.lastResult === LevelResultType.Success ? 'success' : 'danger',
             );
             return;
         }
 
         if (this.uiManager.getCurrentPage() === UIPageId.Verify) {
-            this.updateTopStatus(`VERIFY SCREEN READY / LEVEL ${this.currentLevelId}`, 'neutral');
+            this.updateTopStatus(`第 ${this.currentLevelId} 关就绪`, 'neutral');
             return;
         }
 
-        this.updateTopStatus('MAIN MENU READY', 'success');
+        this.updateTopStatus('主菜单', 'success');
     }
 
     private updateTopStatus(statusText: string, tone: UiTone): void {

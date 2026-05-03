@@ -23,22 +23,13 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
         const { width, height } = getNodeSize(rootNode, 420, 220);
         const config = this.requireConfig();
 
-        createLevelLabel(rootNode, 'FakeButtonTitleLabel', config.payload.controllerTitle, {
-            width: width - 20,
-            height: 32,
-            fontSize: 22,
-            color: new Color(79, 224, 163, 255),
-            x: 0,
-            y: height * 0.5 - 26,
-        });
-
-        this.stateLabel = createLevelLabel(rootNode, 'FakeButtonStateLabel', 'STATUS: READY', {
+        this.stateLabel = createLevelLabel(rootNode, 'FakeButtonStateLabel', '状态：就绪', {
             width: width - 20,
             height: 26,
             fontSize: 18,
             color: new Color(224, 166, 79, 255),
             x: 0,
-            y: height * 0.5 - 58,
+            y: height * 0.5 - 28,
         });
 
         this.infoLabel = createLevelLabel(rootNode, 'FakeButtonInfoLabel', config.payload.controllerHint, {
@@ -75,58 +66,58 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
         switch (this.phase) {
         case 'success': {
             const result = this.buildSuccessResult(
-                'The delayed confirm sequence was accepted.',
-                'You clicked the changed button only after the waiting window completed.',
+                '延迟确认流程已被接受。',
+                '你在等待窗口结束后才点击了变化后的按钮。',
                 {
                     reasonKey: 'delayed-confirm',
                 },
             );
-            this.updateInfo(result.detailText);
+            this.updateInfo('验证结果已生成，请查看弹窗。');
             return result;
         }
         case 'ready': {
             const result = this.buildFailureResult(
-                'The final changed button was not clicked.',
-                'The button has shifted into its valid state. Click it once more before submitting.',
+                '最后变化后的按钮还没有被点击。',
+                '按钮已经进入有效状态。提交前请再点击它一次。',
                 {
                     reasonKey: 'changed-button-ignored',
                 },
             );
-            this.updateInfo(result.detailText);
+            this.updateInfo('验证结果已生成，请查看弹窗。');
             return result;
         }
         case 'waiting': {
             const remainingMs = Math.max(0, this.requireConfig().payload.minWaitMs - (Date.now() - this.waitStartAt));
             const result = this.buildFailureResult(
-                'The system is still watching your impatience.',
-                `Wait at least ${Math.ceil(remainingMs / 100) / 10}s more, then click the changed button.`,
+                '系统仍在观察你的急躁。',
+                `至少再等待 ${Math.ceil(remainingMs / 100) / 10} 秒，然后点击变化后的按钮。`,
                 {
                     reasonKey: 'waiting-window',
                 },
             );
-            this.updateInfo(result.detailText);
+            this.updateInfo('验证结果已生成，请查看弹窗。');
             return result;
         }
         case 'first-fail': {
             const result = this.buildFailureResult(
-                'The first confirm was too quick.',
-                'Repeating the same click pattern will still fail. Watch for the button to change.',
+                '第一次确认太快了。',
+                '重复相同点击模式仍会失败。请观察按钮变化。',
                 {
                     reasonKey: 'too-fast',
                 },
             );
-            this.updateInfo(result.detailText);
+            this.updateInfo('验证结果已生成，请查看弹窗。');
             return result;
         }
         default: {
             const result = this.buildFailureResult(
-                'No valid hesitation pattern was detected.',
-                'Press the internal confirm button and let the controller expose the trap first.',
+                '没有检测到有效的犹豫模式。',
+                '请先点击内部确认按钮，让控制器暴露陷阱。',
                 {
                     reasonKey: 'no-pattern',
                 },
             );
-            this.updateInfo(result.detailText);
+            this.updateInfo('验证结果已生成，请查看弹窗。');
             return result;
         }
         }
@@ -145,7 +136,7 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
 
         if (this.phase === 'initial') {
             this.phase = 'first-fail';
-            this.updateInfo('Too fast. The system expected hesitation and marked this click as suspicious.');
+            this.updateInfo('太快了。系统期待犹豫，并将这次点击标记为可疑。');
             this.applyPhaseVisuals();
             return;
         }
@@ -153,12 +144,12 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
         if (this.phase === 'first-fail') {
             this.phase = 'waiting';
             this.waitStartAt = Date.now();
-            this.updateInfo('Repeated input rejected. The button is recalibrating. Wait and watch for the change.');
+            this.updateInfo('重复输入已被拒绝。按钮正在重新校准，请等待并观察变化。');
             this.applyPhaseVisuals();
             this.clearReadyTimer();
             this.readyTimerId = setTimeout(() => {
                 this.phase = 'ready';
-                this.updateInfo('The confirm button has changed. Click it now, then press SUBMIT CHECK.');
+                this.updateInfo('确认按钮已经变化。现在点击它，然后提交验证。');
                 this.applyPhaseVisuals();
             }, config.payload.minWaitMs);
             return;
@@ -167,13 +158,13 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
         if (this.phase === 'waiting') {
             const elapsedMs = Date.now() - this.waitStartAt;
             const remainingMs = Math.max(0, config.payload.minWaitMs - elapsedMs);
-            this.updateInfo(`Still too early. Wait ${Math.ceil(remainingMs / 100) / 10}s before clicking the changed button.`);
+            this.updateInfo(`还是太早。再等 ${Math.ceil(remainingMs / 100) / 10} 秒后点击变化后的按钮。`);
             return;
         }
 
         if (this.phase === 'ready') {
             this.phase = 'success';
-            this.updateInfo('Delayed click accepted. Submit the level now.');
+            this.updateInfo('延迟点击已接受。现在提交本关。');
             this.applyPhaseVisuals();
         }
     }
@@ -190,32 +181,32 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
             this.actionButton.setText(config.payload.initialButtonText);
             this.actionButton.setColor(new Color(48, 136, 97, 255));
             this.actionButton.setPosition(config.payload.initialOffsetX, config.payload.initialOffsetY - 58);
-            this.updateState('STATUS: READY');
+            this.updateState('状态：就绪');
             this.updateInfo(config.payload.controllerHint);
             break;
         case 'first-fail':
             this.actionButton.setText(config.payload.firstFailButtonText);
             this.actionButton.setColor(new Color(132, 56, 56, 255));
             this.actionButton.setPosition(config.payload.firstFailOffsetX, config.payload.firstFailOffsetY - 58);
-            this.updateState('STATUS: TOO FAST');
+            this.updateState('状态：太快');
             break;
         case 'waiting':
             this.actionButton.setText(config.payload.waitingButtonText);
             this.actionButton.setColor(new Color(86, 92, 102, 255));
             this.actionButton.setPosition(config.payload.waitingOffsetX, config.payload.waitingOffsetY - 58);
-            this.updateState('STATUS: WAIT');
+            this.updateState('状态：等待');
             break;
         case 'ready':
             this.actionButton.setText(config.payload.readyButtonText);
             this.actionButton.setColor(new Color(224, 166, 79, 255));
             this.actionButton.setPosition(config.payload.readyOffsetX, config.payload.readyOffsetY - 58);
-            this.updateState('STATUS: CHANGED');
+            this.updateState('状态：已变化');
             break;
         case 'success':
             this.actionButton.setText(config.payload.successButtonText);
             this.actionButton.setColor(new Color(48, 136, 97, 255));
             this.actionButton.setPosition(config.payload.readyOffsetX, config.payload.readyOffsetY - 58);
-            this.updateState('STATUS: ACCEPTED');
+            this.updateState('状态：已接受');
             break;
         }
     }

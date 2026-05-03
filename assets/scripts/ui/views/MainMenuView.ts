@@ -1,5 +1,17 @@
-import { _decorator, Button, Label, Sprite } from 'cc';
-import { GAME_NAME, GAME_NAME_EN, GAME_SUBTITLE } from '../../data/GameConst';
+import {
+    _decorator,
+    Button,
+    Color,
+    Graphics,
+    HorizontalTextAlignment,
+    Label,
+    Node,
+    Sprite,
+    UITransform,
+    Vec3,
+    VerticalTextAlignment,
+} from 'cc';
+import { GAME_NAME } from '../../data/GameConst';
 import { buildMainMenuNotice, calculateHumanIndex, formatLevelCode, getHumanIndexRank } from '../../data/ProgressDisplay';
 import { SaveData } from '../../data/SaveData';
 import { BasePanel } from '../base/BasePanel';
@@ -12,6 +24,10 @@ import {
 } from '../theme/UITheme';
 
 const { ccclass, property } = _decorator;
+const MENU_WIDTH = 720;
+const MENU_HEIGHT = 1280;
+const CARD_WIDTH = 600;
+const CARD_HEIGHT = 720;
 
 export interface MainMenuActions {
     onStart: () => void;
@@ -66,10 +82,19 @@ export class MainMenuView extends BasePanel {
     public openSettingsButtonLabel: Label | null = null;
 
     private actions: MainMenuActions | null = null;
+    private backgroundNode: Node | null = null;
+    private centerPanelNode: Node | null = null;
+    private progressNode: Node | null = null;
 
     protected onLoad(): void {
         this.applyTheme();
+        this.applyLayout();
         this.syncStaticText();
+        this.bindButtonEvents();
+    }
+
+    protected onDestroy(): void {
+        this.unbindButtonEvents();
     }
 
     public bindActions(actions: MainMenuActions): void {
@@ -77,14 +102,13 @@ export class MainMenuView extends BasePanel {
     }
 
     public refresh(saveData: Readonly<SaveData>, levelCount: number): void {
+        this.applyLayout();
         this.syncStaticText();
 
         const humanIndex = calculateHumanIndex(saveData);
 
         if (this.currentLevelValueLabel) {
-            this.currentLevelValueLabel.string = `${formatLevelCode(saveData.selectedLevelId)} / ${levelCount
-                .toString()
-                .padStart(2, '0')}`;
+            this.currentLevelValueLabel.string = `${formatLevelCode(saveData.selectedLevelId)} / 共 ${levelCount} 关`;
         }
 
         if (this.humanIndexValueLabel) {
@@ -101,10 +125,12 @@ export class MainMenuView extends BasePanel {
     }
 
     public onClickStartVerify(): void {
+        console.log('[MainMenuView] start click');
         this.actions?.onStart();
     }
 
     public onClickOpenSettings(): void {
+        console.log('[MainMenuView] settings click');
         this.actions?.onOpenSettings();
     }
 
@@ -122,21 +148,200 @@ export class MainMenuView extends BasePanel {
         applyButtonTheme(this.openSettingsButton, this.openSettingsButtonSprite, this.openSettingsButtonLabel, 'secondary');
     }
 
+    private applyLayout(): void {
+        this.ensureTransform(this.node, MENU_WIDTH, MENU_HEIGHT);
+        this.node.setPosition(new Vec3(0, 0, 0));
+        this.ensureStructure();
+
+        this.layoutPanel(this.backgroundNode, 0, 0, MENU_WIDTH, MENU_HEIGHT, new Color(18, 26, 36, 255), undefined, 0);
+        this.layoutNode(this.centerPanelNode, 0, -10, CARD_WIDTH, CARD_HEIGHT);
+        this.drawRoundedRect(this.centerPanelNode, CARD_WIDTH, CARD_HEIGHT, new Color(48, 60, 72, 248), 8, new Color(86, 106, 124, 255));
+        this.layoutPanel(this.panelBackgroundSprite?.node ?? null, 0, 0, CARD_WIDTH, CARD_HEIGHT, new Color(48, 60, 72, 248), new Color(86, 106, 124, 255));
+        this.layoutPanel(this.panelAccentLineSprite?.node ?? null, 0, 330, CARD_WIDTH - 56, 6, new Color(79, 224, 163, 255));
+
+        this.layoutLabel(this.titleLabel, 0, 240, 520, 58, 40, 48, 'title');
+        this.layoutLabel(this.subtitleLabel, 0, 186, 520, 36, 24, 30, 'muted');
+        this.layoutNode(this.progressNode, 0, 36, 500, 220);
+        this.layoutPanel(this.noticePanelSprite?.node ?? null, 0, 0, 500, 220, new Color(34, 44, 56, 244), new Color(79, 224, 163, 140));
+        this.layoutLabel(this.currentLevelValueLabel, 0, 62, 460, 32, 22, 28, 'success');
+        this.layoutLabel(this.humanIndexValueLabel, 0, 18, 460, 32, 22, 28, 'success');
+        this.layoutLabel(this.failureCountValueLabel, 0, -26, 460, 32, 22, 28, 'danger');
+        this.layoutLabel(this.systemNoticeLabel, 0, -86, 440, 62, 20, 28, 'muted');
+        this.layoutButton(this.startVerifyButton, this.startVerifyButtonSprite, this.startVerifyButtonLabel, 0, -210, 360, 72, 26);
+        this.layoutButton(this.openSettingsButton, this.openSettingsButtonSprite, this.openSettingsButtonLabel, 0, -300, 360, 64, 24);
+    }
+
+    private ensureStructure(): void {
+        this.backgroundNode = this.ensureChild(this.node, 'Background');
+        this.centerPanelNode = this.ensureChild(this.node, 'CenterPanel');
+        this.progressNode = this.ensureChild(this.centerPanelNode, 'Progress');
+
+        this.reparent(this.panelBackgroundSprite?.node ?? null, this.centerPanelNode);
+        this.reparent(this.panelAccentLineSprite?.node ?? null, this.centerPanelNode);
+        this.reparent(this.titleLabel?.node ?? null, this.centerPanelNode);
+        this.reparent(this.subtitleLabel?.node ?? null, this.centerPanelNode);
+        this.reparent(this.progressNode, this.centerPanelNode);
+        this.reparent(this.noticePanelSprite?.node ?? null, this.progressNode);
+        this.reparent(this.currentLevelValueLabel?.node ?? null, this.progressNode);
+        this.reparent(this.humanIndexValueLabel?.node ?? null, this.progressNode);
+        this.reparent(this.failureCountValueLabel?.node ?? null, this.progressNode);
+        this.reparent(this.systemNoticeLabel?.node ?? null, this.progressNode);
+        this.reparent(this.startVerifyButton?.node ?? null, this.centerPanelNode);
+        this.reparent(this.openSettingsButton?.node ?? null, this.centerPanelNode);
+
+        this.backgroundNode.setSiblingIndex(0);
+        this.centerPanelNode.setSiblingIndex(this.node.children.length - 1);
+        this.panelBackgroundSprite?.node.setSiblingIndex(0);
+        this.noticePanelSprite?.node.setSiblingIndex(0);
+    }
+
+    private ensureChild(parent: Node, name: string): Node {
+        const existing = parent.getChildByName(name);
+
+        if (existing) {
+            return existing;
+        }
+
+        const node = new Node(name);
+        parent.addChild(node);
+        return node;
+    }
+
+    private reparent(node: Node | null, parent: Node | null): void {
+        if (!node || !parent || node === parent || node.parent === parent) {
+            return;
+        }
+
+        node.setParent(parent, false);
+    }
+
+    private layoutPanel(node: Node | null, x: number, y: number, width: number, height: number, fillColor: Color, strokeColor?: Color, radius = 8): void {
+        if (!node) {
+            return;
+        }
+
+        node.active = true;
+        node.setPosition(new Vec3(x, y, 0));
+        this.drawRoundedRect(node, width, height, fillColor, radius, strokeColor);
+    }
+
+    private layoutNode(node: Node | null, x: number, y: number, width: number, height: number): void {
+        if (!node) {
+            return;
+        }
+
+        node.active = true;
+        node.setPosition(new Vec3(x, y, 0));
+        this.ensureTransform(node, width, height);
+    }
+
+    private layoutLabel(
+        label: Label | null,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        fontSize: number,
+        lineHeight: number,
+        tone: 'title' | 'muted' | 'success' | 'danger',
+    ): void {
+        if (!label) {
+            return;
+        }
+
+        label.node.active = true;
+        label.node.setPosition(new Vec3(x, y, 0));
+        this.ensureTransform(label.node, width, height);
+        label.fontSize = fontSize;
+        label.lineHeight = lineHeight;
+        label.enableWrapText = true;
+        label.overflow = Label.Overflow.SHRINK;
+        label.horizontalAlign = HorizontalTextAlignment.CENTER;
+        label.verticalAlign = VerticalTextAlignment.CENTER;
+        applyLabelTone(label, tone);
+    }
+
+    private layoutButton(button: Button | null, sprite: Sprite | null, label: Label | null, x: number, y: number, width: number, height: number, fontSize: number): void {
+        if (!button) {
+            return;
+        }
+
+        button.node.active = true;
+        button.node.setPosition(new Vec3(x, y, 0));
+        this.ensureTransform(button.node, width, height);
+        this.layoutPanel(sprite?.node ?? button.node, sprite ? 0 : x, sprite ? 0 : y, width, height, sprite ? sprite.color : new Color(48, 136, 97, 255));
+
+        if (label) {
+            label.node.setPosition(new Vec3(0, 0, 0));
+            this.ensureTransform(label.node, width - 36, height - 16);
+            label.fontSize = fontSize;
+            label.lineHeight = fontSize + 8;
+            label.enableWrapText = false;
+            label.overflow = Label.Overflow.SHRINK;
+            label.horizontalAlign = HorizontalTextAlignment.CENTER;
+            label.verticalAlign = VerticalTextAlignment.CENTER;
+        }
+    }
+
+    private ensureTransform(node: Node, width: number, height: number): UITransform {
+        const transform = node.getComponent(UITransform) ?? node.addComponent(UITransform);
+        transform.setContentSize(width, height);
+        return transform;
+    }
+
+    private drawRoundedRect(node: Node, width: number, height: number, fillColor: Color, radius: number, strokeColor?: Color): void {
+        this.ensureTransform(node, width, height);
+
+        const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
+        graphics.clear();
+        graphics.fillColor = fillColor;
+        graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
+        graphics.fill();
+
+        if (!strokeColor) {
+            return;
+        }
+
+        graphics.strokeColor = strokeColor;
+        graphics.lineWidth = 2;
+        graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
+        graphics.stroke();
+    }
+
     private syncStaticText(): void {
         if (this.titleLabel) {
             this.titleLabel.string = GAME_NAME;
         }
 
         if (this.subtitleLabel) {
-            this.subtitleLabel.string = `${GAME_NAME_EN} / ${GAME_SUBTITLE}`;
+            this.subtitleLabel.string = '荒诞人类验证原型';
         }
 
         if (this.startVerifyButtonLabel) {
-            this.startVerifyButtonLabel.string = 'START VERIFY';
+            this.startVerifyButtonLabel.string = '开始验证';
         }
 
         if (this.openSettingsButtonLabel) {
-            this.openSettingsButtonLabel.string = 'SETTINGS';
+            this.openSettingsButtonLabel.string = '设置';
+        }
+    }
+
+    private bindButtonEvents(): void {
+        this.unbindButtonEvents();
+        this.clearSerializedClickEvents(this.startVerifyButton);
+        this.clearSerializedClickEvents(this.openSettingsButton);
+        this.startVerifyButton?.node.on(Button.EventType.CLICK, this.onClickStartVerify, this);
+        this.openSettingsButton?.node.on(Button.EventType.CLICK, this.onClickOpenSettings, this);
+    }
+
+    private unbindButtonEvents(): void {
+        this.startVerifyButton?.node.off(Button.EventType.CLICK, this.onClickStartVerify, this);
+        this.openSettingsButton?.node.off(Button.EventType.CLICK, this.onClickOpenSettings, this);
+    }
+
+    private clearSerializedClickEvents(button: Button | null): void {
+        if (button) {
+            button.clickEvents.length = 0;
         }
     }
 }

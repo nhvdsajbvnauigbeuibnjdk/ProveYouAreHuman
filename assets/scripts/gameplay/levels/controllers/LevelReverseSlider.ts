@@ -85,7 +85,7 @@ function getDirectionSign(direction: SliderDirection): number {
 }
 
 function getDirectionLabel(direction: SliderDirection): string {
-    return direction === 'left' ? 'LEFT' : 'RIGHT';
+    return direction === 'left' ? '向左' : '向右';
 }
 
 function getNormalizedTrackProgress(trackProgress: number, dragRange: SliderDragRange): number {
@@ -168,17 +168,17 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         this.refreshTrackVisual();
         this.refreshHandleVisual();
         this.refreshStatusLabel();
-        this.updateState('STATUS: CALIBRATING', copyColor(UI_THEME.warning));
+        this.updateState('状态：校准中', copyColor(UI_THEME.warning));
         this.updateInfo(payload.controllerHint);
     }
 
     protected onValidate(): LevelValidationResult {
         const result = this.buildValidationResult();
         this.updateState(
-            result.resultType === LevelResultType.Success ? 'STATUS: ACCEPTED' : 'STATUS: REJECTED',
+            result.resultType === LevelResultType.Success ? '状态：已接受' : '状态：已拒绝',
             result.resultType === LevelResultType.Success ? copyColor(UI_THEME.success) : copyColor(UI_THEME.danger),
         );
-        this.updateInfo(result.detailText);
+        this.updateInfo('验证结果已生成，请查看弹窗。');
         this.refreshHandleVisual();
         return result;
     }
@@ -217,22 +217,13 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         const payload = this.requireConfig().payload;
         const panelWidth = Math.min(width - 16, 450);
 
-        createLevelLabel(rootNode, 'ReverseSliderTitleLabel', payload.controllerTitle, {
-            width: width - 20,
-            height: 32,
-            fontSize: 22,
-            color: copyColor(UI_THEME.accent),
-            x: 0,
-            y: height * 0.5 - 24,
-        });
-
-        this.stateLabel = createLevelLabel(rootNode, 'ReverseSliderStateLabel', 'STATUS: CALIBRATING', {
+        this.stateLabel = createLevelLabel(rootNode, 'ReverseSliderStateLabel', '状态：校准中', {
             width: width - 20,
             height: 24,
             fontSize: 17,
             color: copyColor(UI_THEME.warning),
             x: 0,
-            y: height * 0.5 - 54,
+            y: height * 0.5 - 24,
         });
 
         this.infoLabel = createLevelLabel(rootNode, 'ReverseSliderInfoLabel', payload.controllerHint, {
@@ -241,7 +232,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             fontSize: 14,
             color: copyColor(UI_THEME.textPrimary),
             x: 0,
-            y: 42,
+            y: 50,
         });
 
         this.panelNode = createLevelPanel(
@@ -262,7 +253,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             y: 46,
         });
 
-        this.statusLabel = createLevelLabel(this.panelNode, 'ReverseSliderStatusLabel', 'VISUAL 00 / INTERNAL 00 / LAST NONE', {
+        this.statusLabel = createLevelLabel(this.panelNode, 'ReverseSliderStatusLabel', '可见 00 / 内部 00 / 上次 无', {
             width: panelWidth - 28,
             height: 24,
             fontSize: 13,
@@ -310,7 +301,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             y: 0,
         });
 
-        createLevelLabel(parent, 'ReverseSliderLeftLabel', 'LEFT', {
+        createLevelLabel(parent, 'ReverseSliderLeftLabel', '左', {
             width: 60,
             height: 18,
             fontSize: 12,
@@ -319,7 +310,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             y: -24,
         });
 
-        createLevelLabel(parent, 'ReverseSliderRightLabel', 'RIGHT', {
+        createLevelLabel(parent, 'ReverseSliderRightLabel', '右', {
             width: 60,
             height: 18,
             fontSize: 12,
@@ -384,8 +375,8 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         this.dragStartInternalProgress = this.internalProgress;
         const startedOnHandle = event.currentTarget === this.handleNode;
         this.dragPointerOffset = startedOnHandle ? this.visualProgress - pointerProgress : 0;
-        this.updateState('STATUS: DRAGGING', copyColor(UI_THEME.warning));
-        this.updateInfo('Visible drag captured. Release the slider, then submit the verification.');
+        this.updateState('状态：拖动中', copyColor(UI_THEME.warning));
+        this.updateInfo('已捕捉到可见拖动。松开滑块后提交验证。');
     }
 
     private handlePointerMove(event: SliderPointerEvent): void {
@@ -426,8 +417,8 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         this.refreshStatusLabel();
 
         if (!this.requireConfig().payload.autoValidateOnRelease) {
-            this.updateState('STATUS: READY TO SUBMIT', copyColor(UI_THEME.warning));
-            this.updateInfo('Release recorded. Submit the slider to test the hidden rule.');
+            this.updateState('状态：可提交', copyColor(UI_THEME.warning));
+            this.updateInfo('已记录松开动作。提交滑块以测试隐藏规则。');
             return;
         }
 
@@ -481,11 +472,11 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
 
         if (!this.hasEffectiveDrag) {
             return this.buildFailureResult(
-                'No effective slider movement was detected.',
+                '没有检测到有效滑块移动。',
                 [
-                    `Prompt: ${config.payload.promptText}`,
-                    'The handle never moved far enough to register as a deliberate human action.',
-                    `Rule: ${config.absurdRule}`,
+                    `提示：${config.payload.promptText}`,
+                    '滑块移动距离不足，无法被记录为一次有意的人类操作。',
+                    `规则：${config.absurdRule}`,
                 ].join(' '),
                 {
                     reasonKey: 'no-drag',
@@ -495,14 +486,14 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
 
         if (this.internalProgress <= config.payload.threshold) {
             return this.buildSuccessResult(
-                'The hidden reverse threshold was satisfied.',
+                '隐藏逆向阈值已满足。',
                 [
-                    `Visual progress stopped at ${this.formatPercent(this.visualProgress)}.`,
-                    `Internal progress settled at ${this.formatPercent(this.internalProgress)}, which is below the required ${this.formatPercent(config.payload.threshold)}.`,
-                    `The last drag segment started from visual ${this.formatPercent(this.dragStartVisualProgress)} and internal ${this.formatPercent(this.dragStartInternalProgress)}.`,
+                    `可见进度停在 ${this.formatPercent(this.visualProgress)}。`,
+                    `内部进度停在 ${this.formatPercent(this.internalProgress)}，低于要求的 ${this.formatPercent(config.payload.threshold)}。`,
+                    `上一次拖动从可见 ${this.formatPercent(this.dragStartVisualProgress)}、内部 ${this.formatPercent(this.dragStartInternalProgress)} 开始。`,
                     config.payload.reverseControl
-                        ? 'Reverse control was active, so moving the handle visually away from the prompt produced the correct hidden result.'
-                        : 'Direct control path satisfied the hidden rule.',
+                        ? '逆向控制已启用，所以让滑块在视觉上偏离提示反而产生了正确的隐藏结果。'
+                        : '直接控制路径满足了隐藏规则。',
                 ].join(' '),
                 {
                     reasonKey: 'reverse-threshold',
@@ -535,47 +526,47 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
     private buildFailureSummary(reason: SliderFailureReason): string {
         switch (reason) {
         case 'ordinary-direction':
-            return 'The slider was dragged in the most ordinary direction.';
+            return '滑块被拖向了最普通的方向。';
         case 'path-too-direct':
-            return 'The drag path was too direct and predictable.';
+            return '拖动路径过于直接且可预测。';
         case 'threshold-not-reached':
-            return 'The hidden reverse threshold was not reached.';
+            return '没有达到隐藏逆向阈值。';
         default:
-            return 'No effective slider movement was detected.';
+            return '没有检测到有效滑块移动。';
         }
     }
 
     private buildFailureDetail(reason: SliderFailureReason): string {
         const config = this.requireConfig();
         const detailParts: string[] = [
-            `Visual progress ended at ${this.formatPercent(this.visualProgress)} while internal progress ended at ${this.formatPercent(this.internalProgress)}.`,
-            `The last drag segment began at visual ${this.formatPercent(this.dragStartVisualProgress)} and internal ${this.formatPercent(this.dragStartInternalProgress)}.`,
+            `可见进度结束于 ${this.formatPercent(this.visualProgress)}，内部进度结束于 ${this.formatPercent(this.internalProgress)}。`,
+            `上一次拖动从可见 ${this.formatPercent(this.dragStartVisualProgress)}、内部 ${this.formatPercent(this.dragStartInternalProgress)} 开始。`,
         ];
 
         if (reason === 'ordinary-direction') {
             detailParts.push(
-                `You followed the displayed ${getDirectionLabel(config.payload.direction)} drag cue. The controller marks obvious compliance as suspicious.`,
+                `你遵循了界面显示的${getDirectionLabel(config.payload.direction)}提示。控制器会把过于听话标记为可疑。`,
             );
         }
 
         if (reason === 'path-too-direct') {
             detailParts.push(
-                `The drag stayed almost perfectly linear with ${this.directionChangeCount} direction changes across ${this.formatPercent(this.totalVisualDistance)} of travel.`,
+                `拖动几乎保持直线，总路程 ${this.formatPercent(this.totalVisualDistance)}，方向变化 ${this.directionChangeCount} 次。`,
             );
         }
 
         if (reason === 'threshold-not-reached') {
             detailParts.push(
-                `The hidden rule requires internal progress <= ${this.formatPercent(config.payload.threshold)}, but the current value is ${this.formatPercent(this.internalProgress)}.`,
+                `隐藏规则要求内部进度 <= ${this.formatPercent(config.payload.threshold)}，当前值为 ${this.formatPercent(this.internalProgress)}。`,
             );
         }
 
         if (!this.hasReleased) {
-            detailParts.push('The drag was submitted without a completed release phase.');
+            detailParts.push('提交时还没有完成松开阶段。');
         }
 
-        detailParts.push(`Last drag direction: ${this.lastDragDirection.toUpperCase()}.`);
-        detailParts.push(`Rule: ${config.absurdRule}`);
+        detailParts.push(`上次拖动方向：${this.formatDirection(this.lastDragDirection)}。`);
+        detailParts.push(`规则：${config.absurdRule}`);
 
         return detailParts.join(' ');
     }
@@ -602,25 +593,25 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
 
     private applyReleasePreview(): void {
         if (this.internalProgress <= this.requireConfig().payload.threshold) {
-            this.updateState('STATUS: PRECHECK PASS', copyColor(UI_THEME.success));
-            this.updateInfo('Release preview: hidden threshold currently looks valid. Submit to lock the judgment.');
+            this.updateState('状态：预检通过', copyColor(UI_THEME.success));
+            this.updateInfo('松开预览：隐藏阈值当前看起来有效。提交后锁定判定。');
             return;
         }
 
         const failureReason = this.getFailureReason();
-        this.updateState('STATUS: PRECHECK FAIL', copyColor(UI_THEME.danger));
+        this.updateState('状态：预检失败', copyColor(UI_THEME.danger));
 
         if (failureReason === 'ordinary-direction') {
-            this.updateInfo('Release preview: the drag looked too obedient. The obvious visual direction is not trusted.');
+            this.updateInfo('松开预览：拖动看起来太听话了。明显的视觉方向并不可信。');
             return;
         }
 
         if (failureReason === 'path-too-direct') {
-            this.updateInfo('Release preview: the motion path was too straight. The system expected more confusion.');
+            this.updateInfo('松开预览：移动路径太直。系统期待更多困惑。');
             return;
         }
 
-        this.updateInfo('Release preview: the hidden threshold still has not been reached.');
+        this.updateInfo('松开预览：隐藏阈值仍未达到。');
     }
 
     private refreshTrackVisual(): void {
@@ -690,11 +681,11 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         }
 
         this.statusLabel.string = [
-            `VISUAL ${this.formatPercent(this.visualProgress)}`,
-            `INTERNAL ${this.formatPercent(this.internalProgress)}`,
-            `LAST ${this.lastDragDirection.toUpperCase()}`,
-            `TURNS ${this.directionChangeCount}`,
-            `RELEASES ${this.releaseCount}`,
+            `可见 ${this.formatPercent(this.visualProgress)}`,
+            `内部 ${this.formatPercent(this.internalProgress)}`,
+            `上次 ${this.formatDirection(this.lastDragDirection)}`,
+            `转向 ${this.directionChangeCount}`,
+            `松开 ${this.releaseCount}`,
         ].join(' / ');
     }
 
@@ -735,6 +726,17 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
 
     private formatPercent(value: number): string {
         return `${Math.round(clamp01(value) * 100)}%`;
+    }
+
+    private formatDirection(direction: DragDirection): string {
+        switch (direction) {
+        case 'left':
+            return '向左';
+        case 'right':
+            return '向右';
+        default:
+            return '无';
+        }
     }
 
     private clearState(): void {

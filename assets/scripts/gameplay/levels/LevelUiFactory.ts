@@ -36,7 +36,7 @@ function drawRoundedRect(
     width: number,
     height: number,
     fillColor: Color,
-    radius: number = 12,
+    radius: number = 8,
     strokeColor?: Color,
     lineWidth: number = 2,
 ): void {
@@ -75,6 +75,9 @@ function createTextLabel(
     label.lineHeight = fontSize + 8;
     label.color = color;
     label.enableWrapText = true;
+    label.overflow = Label.Overflow.SHRINK;
+    label.horizontalAlign = HorizontalTextAlignment.CENTER;
+    label.verticalAlign = VerticalTextAlignment.CENTER;
 
     return label;
 }
@@ -111,7 +114,7 @@ export function createLevelPanel(
     ensureTransform(node, width, height);
 
     const graphics = node.addComponent(Graphics);
-    drawRoundedRect(graphics, width, height, color);
+    drawRoundedRect(graphics, width, height, color, 8, new Color(96, 118, 132, 255));
     return node;
 }
 
@@ -160,6 +163,7 @@ export function createLevelButton(
     drawRoundedRect(graphics, width, height, color);
 
     const label = createTextLabel(node, `${name}Label`, text, width - 18, height - 12, 24, new Color(244, 252, 248, 255), 0, 0);
+    label.overflow = Label.Overflow.SHRINK;
 
     return {
         node,
@@ -168,7 +172,7 @@ export function createLevelButton(
             label.string = value;
         },
         setColor: (value: Color) => {
-            drawRoundedRect(graphics, width, height, value);
+            drawRoundedRect(graphics, width, height, value, 8, new Color(116, 136, 148, 255));
         },
         setPosition: (nextX: number, nextY: number) => {
             node.setPosition(new Vec3(nextX, nextY, 0));
@@ -198,11 +202,11 @@ export function createSelectableLevelCard(
         `${name}TitleLabel`,
         title,
         width - 18,
-        28,
-        15,
+        30,
+        17,
         new Color(244, 252, 248, 255),
         0,
-        height * 0.5 - 22,
+        height * 0.5 - 23,
     );
     titleLabel.horizontalAlign = HorizontalTextAlignment.LEFT;
     titleLabel.verticalAlign = VerticalTextAlignment.CENTER;
@@ -212,11 +216,11 @@ export function createSelectableLevelCard(
         `${name}DescriptionLabel`,
         description,
         width - 18,
-        height - 50,
-        11,
-        new Color(166, 184, 188, 255),
+        height - 48,
+        13,
+        new Color(188, 206, 210, 255),
         0,
-        -8,
+        -6,
     );
     descriptionLabel.horizontalAlign = HorizontalTextAlignment.LEFT;
     descriptionLabel.verticalAlign = VerticalTextAlignment.TOP;
@@ -226,9 +230,9 @@ export function createSelectableLevelCard(
             graphics,
             width,
             height,
-            selected ? new Color(36, 86, 67, 255) : new Color(22, 28, 34, 255),
-            10,
-            selected ? new Color(79, 224, 163, 255) : new Color(70, 84, 96, 255),
+            selected ? new Color(48, 112, 84, 255) : new Color(50, 62, 74, 255),
+            8,
+            selected ? new Color(92, 244, 178, 255) : new Color(116, 136, 148, 255),
             selected ? 3 : 2,
         );
         titleLabel.color = selected ? new Color(244, 252, 248, 255) : new Color(220, 232, 228, 255);

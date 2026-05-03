@@ -18,6 +18,8 @@ export class UIManager {
     }
 
     public showPage(pageId: UIPageId): void {
+        this.closeAllPopups();
+
         this.pages.forEach((node, id) => {
             node.active = id === pageId;
         });
@@ -37,11 +39,13 @@ export class UIManager {
             return;
         }
 
-        popup.active = true;
+        this.popups.forEach((node, id) => {
+            node.active = id === popupId;
+        });
 
-        if (!this.popupStack.includes(popupId)) {
-            this.popupStack.push(popupId);
-        }
+        popup.active = true;
+        this.bringToFront(popup);
+        this.popupStack = [popupId];
     }
 
     public closePopup(popupId: UIPopupId): void {
@@ -75,5 +79,15 @@ export class UIManager {
         }
 
         this.closePopup(topPopupId);
+    }
+
+    private bringToFront(node: Node): void {
+        const parent = node.parent;
+
+        if (!parent) {
+            return;
+        }
+
+        node.setSiblingIndex(parent.children.length - 1);
     }
 }
