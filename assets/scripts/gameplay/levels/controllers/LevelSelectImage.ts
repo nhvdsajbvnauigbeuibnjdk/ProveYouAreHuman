@@ -85,8 +85,8 @@ export class LevelSelectImage extends BaseLevelController<SelectImageLevelConfig
         const config = this.requireConfig();
         const selectedIndexes = Array.from(this.selectedIndexes).sort((left, right) => left - right);
         const correctIndexes = [...config.payload.correctIndexes].sort((left, right) => left - right);
-        const ambiguousSelections = selectedIndexes.filter((index) => config.payload.ambiguousIndexes.includes(index));
-        const decoySelections = selectedIndexes.filter((index) => config.payload.decoyIndexes.includes(index));
+        const ambiguousSelections = selectedIndexes.filter((index) => config.payload.ambiguousIndexes.indexOf(index) !== -1);
+        const decoySelections = selectedIndexes.filter((index) => config.payload.decoyIndexes.indexOf(index) !== -1);
         const missingCorrectSelections = correctIndexes.filter((index) => !this.selectedIndexes.has(index));
         const hasExactMatch = this.isExactSelectionMatch(selectedIndexes, correctIndexes);
 

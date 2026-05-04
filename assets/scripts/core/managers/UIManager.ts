@@ -60,7 +60,7 @@ export class UIManager {
     }
 
     public isPopupOpen(popupId: UIPopupId): boolean {
-        return this.popupStack.includes(popupId);
+        return this.popupStack.indexOf(popupId) !== -1;
     }
 
     public closeAllPopups(): void {

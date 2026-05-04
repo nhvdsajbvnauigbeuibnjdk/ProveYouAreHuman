@@ -109,8 +109,6 @@ export class GameApp extends Component {
             onResetProgress: () => this.resetProgress(),
             onClose: () => this.closeSettings(),
         });
-
-        this.attachTopStatusBarToVerifyView();
     }
 
     private registerUI(): void {
@@ -168,17 +166,12 @@ export class GameApp extends Component {
         console.log(`[GameApp] load level: ${level.id} / ${level.key}`);
         this.resultPopup?.resetContent();
         this.uiManager.showPage(UIPageId.Verify);
-        this.attachTopStatusBarToVerifyView();
         if (this.topStatusBar) {
-            this.topStatusBar.node.active = true;
+            this.topStatusBar.node.active = false;
         }
         this.verifyView?.loadLevel(level, this.configManager.getJudgeText('menu_intro'), this.configManager.getNextLevel(level.id)?.id ?? null);
         this.verifyView?.setPlayingInteractionEnabled(true);
         this.updateTopStatus(`第 ${level.id} 关就绪`, 'neutral');
-    }
-
-    private attachTopStatusBarToVerifyView(): void {
-        this.verifyView?.attachTopStatusBar(this.topStatusBar?.node ?? null);
     }
 
     private handleLevelValidated(event: VerifyLevelResultEvent): void {

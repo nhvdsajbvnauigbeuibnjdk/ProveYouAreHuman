@@ -144,6 +144,9 @@ export class ResultPopup extends BasePanel {
         const sections = [
             fallback,
             content.message,
+            content.absurdRule,
+            content.aiJudgeText,
+            content.systemNote ?? '',
         ]
             .map((item) => this.normalizeText(item))
             .filter((item, index, list) => item.length > 0 && list.indexOf(item) === index);
