@@ -10,6 +10,7 @@ import {
     UITransform,
     Vec3,
     VerticalTextAlignment,
+    Widget,
 } from 'cc';
 import { LevelResultType } from '../../data/GameConst';
 import { formatLevelCode } from '../../data/ProgressDisplay';
@@ -473,11 +474,19 @@ export class VerifyView extends BasePanel {
             return;
         }
 
-        if (this.topStatusBarNode.parent === this.topBarNode) {
-            return;
+        const topBarSize = this.topBarNode.getComponent(UITransform)?.contentSize ?? { width: 640, height: 92 };
+        const widget = this.topStatusBarNode.getComponent(Widget);
+
+        if (widget) {
+            widget.enabled = false;
         }
 
-        this.topStatusBarNode.setParent(this.topBarNode, true);
+        if (this.topStatusBarNode.parent !== this.topBarNode) {
+            this.topStatusBarNode.setParent(this.topBarNode, false);
+        }
+
+        this.topStatusBarNode.setPosition(new Vec3(0, 0, 0));
+        this.ensureTransform(this.topStatusBarNode, topBarSize.width, topBarSize.height);
     }
 
     private ensureChild(parent: Node, name: string): Node {
