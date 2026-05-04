@@ -122,6 +122,7 @@ export class VerifyView extends BasePanel {
     private headerPanelNode: Node | null = null;
     private gameplayPanelNode: Node | null = null;
     private bottomPanelNode: Node | null = null;
+    private topStatusBarNode: Node | null = null;
 
     protected onLoad(): void {
         this.bindButtonEvents();
@@ -136,6 +137,11 @@ export class VerifyView extends BasePanel {
 
     public bindActions(actions: VerifyViewActions): void {
         this.actions = actions;
+    }
+
+    public attachTopStatusBar(topStatusBarNode: Node | null): void {
+        this.topStatusBarNode = topStatusBarNode;
+        this.applyLayout();
     }
 
     public loadLevel(level: LevelDefinition, judgeText: JudgeTextDefinition | null, nextLevelId: number | null): void {
@@ -436,6 +442,7 @@ export class VerifyView extends BasePanel {
         this.reparent(this.levelCodeLabel?.node ?? null, this.topBarNode);
         this.reparent(this.statusChipSprite?.node ?? null, this.topBarNode);
         this.reparent(this.statusLabel?.node ?? null, this.topBarNode);
+        this.reparentTopStatusBar();
 
         this.reparent(this.instructionPanelSprite?.node ?? null, this.headerPanelNode);
         this.reparent(this.titleLabel?.node ?? null, this.headerPanelNode);
@@ -459,6 +466,18 @@ export class VerifyView extends BasePanel {
         this.panelBackgroundSprite?.node.setSiblingIndex(0);
         this.instructionPanelSprite?.node.setSiblingIndex(0);
         this.levelCardSprite?.node.setSiblingIndex(0);
+    }
+
+    private reparentTopStatusBar(): void {
+        if (!this.topStatusBarNode || !this.topBarNode || this.topStatusBarNode === this.topBarNode) {
+            return;
+        }
+
+        if (this.topStatusBarNode.parent === this.topBarNode) {
+            return;
+        }
+
+        this.topStatusBarNode.setParent(this.topBarNode, true);
     }
 
     private ensureChild(parent: Node, name: string): Node {
