@@ -31,6 +31,7 @@ import {
     applyLabelTone,
     applyMutedPanelStyle,
     applyPanelStyle,
+    UI_THEME,
 } from '../theme/UITheme';
 
 const { ccclass, property } = _decorator;
@@ -377,7 +378,7 @@ export class VerifyView extends BasePanel {
         }
 
         applyAccentStyle(this.statusChipSprite, tone);
-        applyLabelTone(this.statusLabel, tone === 'danger' ? 'danger' : tone === 'success' ? 'success' : 'title');
+        applyLabelTone(this.statusLabel, tone);
     }
 
     private applyTheme(): void {
@@ -401,34 +402,34 @@ export class VerifyView extends BasePanel {
         this.node.setPosition(new Vec3(0, 0, 0));
         this.ensureStructure();
 
-        this.layoutPanel(this.backgroundNode, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, new Color(18, 26, 36, 255), undefined, 0);
-        this.layoutNode(this.topBarNode, 0, 502, 640, 92);
-        this.drawRoundedRect(this.topBarNode, 640, 92, new Color(44, 56, 68, 248), 8, new Color(86, 106, 124, 255));
-        this.layoutPanel(this.panelBackgroundSprite?.node ?? null, 0, 0, 640, 92, new Color(44, 56, 68, 248), new Color(86, 106, 124, 255));
-        this.layoutButton(this.backMenuButton, this.backMenuButtonSprite, this.backMenuButtonLabel, -220, 0, 170, 52, 18, 'secondary');
-        this.layoutLabel(this.levelCodeLabel, 0, 16, 220, 32, 22, 28, 'success');
-        this.layoutPanel(this.statusChipSprite?.node ?? null, 188, 0, 210, 42, new Color(224, 166, 79, 255));
-        this.layoutLabel(this.statusLabel, 188, 0, 190, 34, 20, 26, 'title');
+        this.layoutPanel(this.backgroundNode, 0, 0, VIEW_WIDTH, VIEW_HEIGHT, UI_THEME.background, undefined, 0);
+        this.layoutNode(this.topBarNode, 0, 538, 640, 76);
+        this.drawRoundedRect(this.topBarNode, 640, 76, UI_THEME.panelRaised, 20, UI_THEME.outlineBright);
+        this.layoutPanel(this.panelBackgroundSprite?.node ?? null, 0, 0, 640, 76, UI_THEME.panelRaised, UI_THEME.outlineBright, 20);
+        this.layoutButton(this.backMenuButton, this.backMenuButtonSprite, this.backMenuButtonLabel, -228, 0, 156, 48, 17, 'secondary');
+        this.layoutLabel(this.levelCodeLabel, 0, 14, 220, 30, 22, 28, 'success');
+        this.layoutPanel(this.statusChipSprite?.node ?? null, 202, 0, 178, 38, UI_THEME.panelMuted, UI_THEME.warning, 18);
+        this.layoutLabel(this.statusLabel, 202, 0, 158, 30, 18, 24, 'warning');
 
-        this.layoutNode(this.headerPanelNode, 0, 286, 600, 320);
-        this.drawRoundedRect(this.headerPanelNode, 600, 320, new Color(34, 44, 56, 244), 8, new Color(92, 112, 132, 255));
-        this.layoutPanel(this.instructionPanelSprite?.node ?? null, 0, 0, 600, 320, new Color(34, 44, 56, 244), new Color(92, 112, 132, 255));
-        this.layoutLabel(this.titleLabel, 0, 112, 540, 50, 34, 42, 'title');
-        this.layoutLabel(this.subtitleLabel, 0, 66, 540, 42, 20, 26, 'muted');
-        this.layoutLabel(this.promptLabel, 0, -12, 520, 74, 20, 28, 'title');
-        this.layoutLabel(this.ruleLabel, 0, -96, 520, 74, 20, 28, 'muted');
+        this.layoutNode(this.headerPanelNode, 0, 376, 600, 238);
+        this.drawRoundedRect(this.headerPanelNode, 600, 238, UI_THEME.panel, 22, UI_THEME.accent);
+        this.layoutPanel(this.instructionPanelSprite?.node ?? null, 0, 0, 600, 238, UI_THEME.panel, UI_THEME.accent, 22);
+        this.layoutLabel(this.titleLabel, 0, 76, 540, 44, 32, 40, 'title');
+        this.layoutLabel(this.subtitleLabel, 0, 36, 540, 30, 18, 24, 'muted');
+        this.layoutLabel(this.promptLabel, 0, -28, 520, 58, 18, 25, 'title');
+        this.layoutLabel(this.ruleLabel, 0, -92, 520, 54, 17, 24, 'muted');
 
-        this.layoutNode(this.gameplayPanelNode, 0, -110, 600, 430);
-        this.drawRoundedRect(this.gameplayPanelNode, 600, 430, new Color(36, 48, 60, 246), 8, new Color(79, 224, 163, 120));
-        this.layoutPanel(this.levelCardSprite?.node ?? null, 0, 0, 600, 430, new Color(36, 48, 60, 246), new Color(79, 224, 163, 120));
-        this.layoutLabel(this.levelCardTitleLabel, 0, 170, 520, 34, 22, 28, 'success');
-        this.layoutNode(this.levelContainer, 0, -4, 540, 320);
-        this.layoutLabel(this.levelStateLabel, 0, -178, 520, 46, 18, 24, 'muted');
+        this.layoutNode(this.gameplayPanelNode, 0, -52, 600, 560);
+        this.drawRoundedRect(this.gameplayPanelNode, 600, 560, UI_THEME.panelMuted, 22, UI_THEME.accentSoft);
+        this.layoutPanel(this.levelCardSprite?.node ?? null, 0, 0, 600, 560, UI_THEME.panelMuted, UI_THEME.accentSoft, 22);
+        this.layoutLabel(this.levelCardTitleLabel, 0, 232, 520, 34, 22, 28, 'success');
+        this.layoutNode(this.levelContainer, 0, 18, 550, 414);
+        this.layoutLabel(this.levelStateLabel, 0, -238, 520, 50, 18, 24, 'muted');
 
-        this.layoutNode(this.bottomPanelNode, 0, -492, 600, 174);
-        this.drawRoundedRect(this.bottomPanelNode, 600, 174, new Color(34, 44, 56, 230), 8, new Color(86, 106, 124, 255));
-        this.layoutButton(this.confirmButton, this.confirmButtonSprite, this.confirmButtonLabel, 0, 42, 360, 72, 24, 'primary');
-        this.layoutButton(this.retryButton, this.retryButtonSprite, this.retryButtonLabel, 0, -44, 360, 64, 22, 'secondary');
+        this.layoutNode(this.bottomPanelNode, 0, -514, 600, 120);
+        this.drawRoundedRect(this.bottomPanelNode, 600, 120, UI_THEME.panelRaised, 22, UI_THEME.outlineBright);
+        this.layoutButton(this.confirmButton, this.confirmButtonSprite, this.confirmButtonLabel, -96, 0, 348, 68, 24, 'primary');
+        this.layoutButton(this.retryButton, this.retryButtonSprite, this.retryButtonLabel, 188, 0, 176, 58, 20, 'secondary');
     }
 
     private ensureStructure(): void {
@@ -537,7 +538,7 @@ export class VerifyView extends BasePanel {
         height: number,
         fontSize: number,
         lineHeight: number,
-        tone: 'title' | 'muted' | 'success' | 'danger',
+        tone: 'title' | 'muted' | 'success' | 'danger' | 'warning',
     ): void {
         if (!label) {
             return;
@@ -569,7 +570,7 @@ export class VerifyView extends BasePanel {
         }
 
         this.layoutNode(button.node, x, y, width, height);
-        this.layoutPanel(sprite?.node ?? button.node, sprite ? 0 : x, sprite ? 0 : y, width, height, tone === 'primary' ? new Color(48, 136, 97, 255) : tone === 'danger' ? new Color(132, 56, 56, 255) : new Color(76, 98, 116, 255));
+        this.layoutPanel(sprite?.node ?? button.node, sprite ? 0 : x, sprite ? 0 : y, width, height, tone === 'primary' ? UI_THEME.buttonPrimary : tone === 'danger' ? UI_THEME.buttonDanger : UI_THEME.buttonSecondary, UI_THEME.outline, 18);
         applyButtonTheme(button, sprite, label, tone);
 
         if (!label) {
@@ -606,7 +607,7 @@ export class VerifyView extends BasePanel {
         }
 
         graphics.strokeColor = strokeColor;
-        graphics.lineWidth = 2;
+        graphics.lineWidth = 4;
         graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
         graphics.stroke();
     }

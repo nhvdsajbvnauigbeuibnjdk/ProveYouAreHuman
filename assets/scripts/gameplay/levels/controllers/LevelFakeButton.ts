@@ -1,7 +1,8 @@
-import { Color, Node } from 'cc';
+import { Node } from 'cc';
 import { FakeButtonLevelConfig } from '../../../data/LevelConfig';
 import { BaseLevelController } from '../BaseLevelController';
 import { LevelValidationResult } from '../LevelControllerTypes';
+import { UI_THEME } from '../../../ui/theme/UITheme';
 import {
     LevelButtonHandle,
     createLevelButton,
@@ -27,7 +28,7 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
             width: width - 20,
             height: 26,
             fontSize: 18,
-            color: new Color(224, 166, 79, 255),
+            color: UI_THEME.warning,
             x: 0,
             y: height * 0.5 - 28,
         });
@@ -36,7 +37,7 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
             width: width - 30,
             height: 90,
             fontSize: 18,
-            color: new Color(204, 218, 214, 255),
+            color: UI_THEME.textPrimary,
             x: 0,
             y: 30,
         });
@@ -47,7 +48,7 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
             config.payload.initialButtonText,
             200,
             72,
-            new Color(48, 136, 97, 255),
+            UI_THEME.buttonPrimary,
             config.payload.initialOffsetX,
             config.payload.initialOffsetY - 58,
         );
@@ -179,32 +180,32 @@ export class LevelFakeButton extends BaseLevelController<FakeButtonLevelConfig> 
         switch (this.phase) {
         case 'initial':
             this.actionButton.setText(config.payload.initialButtonText);
-            this.actionButton.setColor(new Color(48, 136, 97, 255));
+            this.actionButton.setColor(UI_THEME.buttonPrimary);
             this.actionButton.setPosition(config.payload.initialOffsetX, config.payload.initialOffsetY - 58);
             this.updateState('状态：就绪');
             this.updateInfo(config.payload.controllerHint);
             break;
         case 'first-fail':
             this.actionButton.setText(config.payload.firstFailButtonText);
-            this.actionButton.setColor(new Color(132, 56, 56, 255));
+            this.actionButton.setColor(UI_THEME.buttonDanger);
             this.actionButton.setPosition(config.payload.firstFailOffsetX, config.payload.firstFailOffsetY - 58);
             this.updateState('状态：太快');
             break;
         case 'waiting':
             this.actionButton.setText(config.payload.waitingButtonText);
-            this.actionButton.setColor(new Color(86, 92, 102, 255));
+            this.actionButton.setColor(UI_THEME.buttonSecondary);
             this.actionButton.setPosition(config.payload.waitingOffsetX, config.payload.waitingOffsetY - 58);
             this.updateState('状态：等待');
             break;
         case 'ready':
             this.actionButton.setText(config.payload.readyButtonText);
-            this.actionButton.setColor(new Color(224, 166, 79, 255));
+            this.actionButton.setColor(UI_THEME.warning);
             this.actionButton.setPosition(config.payload.readyOffsetX, config.payload.readyOffsetY - 58);
             this.updateState('状态：已变化');
             break;
         case 'success':
             this.actionButton.setText(config.payload.successButtonText);
-            this.actionButton.setColor(new Color(48, 136, 97, 255));
+            this.actionButton.setColor(UI_THEME.buttonPrimary);
             this.actionButton.setPosition(config.payload.readyOffsetX, config.payload.readyOffsetY - 58);
             this.updateState('状态：已接受');
             break;

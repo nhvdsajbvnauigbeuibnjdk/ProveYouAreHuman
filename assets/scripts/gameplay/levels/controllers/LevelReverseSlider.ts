@@ -63,7 +63,7 @@ function drawRoundedRect(
     fillColor: Color,
     radius: number,
     strokeColor?: Color,
-    lineWidth: number = 2,
+    lineWidth: number = 4,
 ): void {
     graphics.clear();
     graphics.fillColor = copyColor(fillColor);
@@ -632,7 +632,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             UI_THEME.background,
             10,
             UI_THEME.panelRaised,
-            2,
+            4,
         );
 
         this.trackGraphics.fillColor = new Color(UI_THEME.accent.r, UI_THEME.accent.g, UI_THEME.accent.b, 28);
@@ -640,7 +640,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
         this.trackGraphics.fill();
 
         this.trackGraphics.strokeColor = new Color(UI_THEME.warning.r, UI_THEME.warning.g, UI_THEME.warning.b, 168);
-        this.trackGraphics.lineWidth = 2;
+        this.trackGraphics.lineWidth = 4;
         this.trackGraphics.moveTo(promptMarkerX, -14);
         this.trackGraphics.lineTo(promptMarkerX, 14);
         this.trackGraphics.stroke();
@@ -672,7 +672,7 @@ export class LevelReverseSlider extends BaseLevelController<ReverseSliderLevelCo
             ? copyColor(UI_THEME.accentSoft)
             : copyColor(UI_THEME.panelRaised);
 
-        drawRoundedRect(this.handleGraphics, this.handleWidth, this.handleHeight, fillColor, 12, strokeColor, 2);
+        drawRoundedRect(this.handleGraphics, this.handleWidth, this.handleHeight, fillColor, 16, strokeColor, 4);
     }
 
     private refreshStatusLabel(): void {

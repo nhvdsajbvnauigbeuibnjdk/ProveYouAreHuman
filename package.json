@@ -1,6 +1,14 @@
 {
   "name": "ProveYouAreHuman",
   "uuid": "c58887b0-8250-4d69-9b5b-fae01724f15a",
+  "scripts": {
+    "check": "npm run typecheck && npm run validate:content",
+    "typecheck": "tsc --noEmit --pretty false",
+    "validate:content": "node tools/validate-content.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.8.2"
+  },
   "creator": {
     "version": "3.8.8"
   }

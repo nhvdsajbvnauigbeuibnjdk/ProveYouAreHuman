@@ -1,5 +1,6 @@
 import { _decorator, Component } from 'cc';
 import {
+    FAILURE_RESULT_TITLE,
     GameSceneId,
     LevelResultType,
     UIPageId,
@@ -214,7 +215,7 @@ export class GameApp extends Component {
         this.uiManager.openPopup(UIPopupId.Result);
         console.log('[GameApp] show result');
         this.updateTopStatus(
-            event.result.resultType === LevelResultType.Success ? '验证成功' : '验证失败',
+            event.result.resultType === LevelResultType.Success ? '验证成功' : FAILURE_RESULT_TITLE,
             event.result.resultType === LevelResultType.Success ? 'success' : 'danger',
         );
     }
@@ -238,13 +239,13 @@ export class GameApp extends Component {
 
         return {
             resultType: safeResult,
-            title: safeResult === LevelResultType.Success ? '验证成功' : '验证失败',
+            title: safeResult === LevelResultType.Success ? '验证成功' : FAILURE_RESULT_TITLE,
             message: result.message,
             absurdRule: result.absurdRule,
             aiJudgeText,
             systemNote: systemNoteParts.join('\n'),
             primaryButtonText: safeResult === LevelResultType.Success
-                ? (nextLevelId !== null ? '下一关' : '返回主菜单')
+                ? (nextLevelId !== null ? '下一关' : '查看证明')
                 : '重试',
             secondaryButtonText: '返回主菜单',
         };
@@ -321,7 +322,7 @@ export class GameApp extends Component {
     private syncTopStatusFromUiState(): void {
         if (this.uiManager.isPopupOpen(UIPopupId.Result)) {
             this.updateTopStatus(
-                this.lastResult === LevelResultType.Success ? '验证成功' : '验证失败',
+                this.lastResult === LevelResultType.Success ? '验证成功' : FAILURE_RESULT_TITLE,
                 this.lastResult === LevelResultType.Success ? 'success' : 'danger',
             );
             return;

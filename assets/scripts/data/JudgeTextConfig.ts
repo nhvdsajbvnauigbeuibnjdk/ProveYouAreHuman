@@ -1,3 +1,5 @@
+import { FAILURE_RESULT_TITLE } from './GameConst';
+
 export interface JudgeTextDefinition {
     id: string;
     title: string;
@@ -63,7 +65,7 @@ export const JUDGE_TEXT_CONFIG_LIST: ReadonlyArray<JudgeTextDefinition> = [
     },
     {
         id: 'result_default_failure',
-        title: '验证失败',
+        title: FAILURE_RESULT_TITLE,
         lines: [
             '系统拒绝解释确切原因。',
             '这通常表示系统只是想这样做。',

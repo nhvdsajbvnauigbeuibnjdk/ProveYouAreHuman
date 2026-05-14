@@ -38,11 +38,11 @@ assets/
 
 ## Trial Levels
 
-- Level 1: direct confirmation.
-- Level 2: reverse expectation.
-- Level 3: absurd choice.
+- Level 1: strict image selection (`LevelSelectImage`).
+- Level 2: hesitant confirmation (`LevelFakeButton`).
+- Level 3: reverse slider calibration (`LevelReverseSlider`).
 
-Current gameplay uses config-driven level controllers. Level 2 already runs a real controller, while Levels 1 and 3 stay intentionally lightweight placeholders behind the same factory path.
+Current gameplay uses config-driven level controllers. Each level config declares a `type`, and `LevelControllerFactory` maps that type to the runtime controller mounted under `VerifyView`'s level container.
 
 ## Scene Wiring Notes
 

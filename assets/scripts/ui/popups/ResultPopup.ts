@@ -6,7 +6,9 @@ import {
     Graphics,
     HorizontalTextAlignment,
     Label,
+    Mask,
     Node,
+    ScrollView,
     Sprite,
     UITransform,
     Vec3,
@@ -18,6 +20,7 @@ import {
     applyAccentStyle,
     applyButtonTheme,
     applyMaskStyle,
+    UI_THEME,
 } from '../theme/UITheme';
 
 const { ccclass, property } = _decorator;
@@ -80,9 +83,12 @@ export class ResultPopup extends BasePanel {
     private readonly rootWidth = 720;
     private readonly rootHeight = 1280;
     private readonly panelWidth = 560;
-    private readonly panelHeight = 420;
+    private readonly panelHeight = 520;
     private maskNode: Node | null = null;
     private panelNode: Node | null = null;
+    private messageViewportNode: Node | null = null;
+    private messageContentNode: Node | null = null;
+    private messageScrollView: ScrollView | null = null;
 
     protected onLoad(): void {
         this.applyBaseTheme();
@@ -109,6 +115,7 @@ export class ResultPopup extends BasePanel {
         this.ensurePopupLayout();
 
         const isSuccess = content.resultType === LevelResultType.Success;
+        this.applyResultLayout(isSuccess);
 
         if (this.titleLabel) {
             this.titleLabel.string = content.title;
@@ -119,8 +126,13 @@ export class ResultPopup extends BasePanel {
             this.stateLabel.node.active = false;
         }
 
+        const bodyText = this.composeBody(content);
+
         if (this.messageLabel) {
-            this.messageLabel.string = this.composeBody(content);
+            this.messageLabel.string = bodyText;
+            if (isSuccess) {
+                this.layoutMessageContent(bodyText);
+            }
         }
 
         if (this.primaryButtonLabel) {
@@ -138,9 +150,13 @@ export class ResultPopup extends BasePanel {
     }
 
     private composeBody(content: ResultPopupContent): string {
+        if (content.resultType === LevelResultType.Failure) {
+            return '';
+        }
+
         const fallback = content.resultType === LevelResultType.Success
             ? '你通过了本关验证。'
-            : '请重新尝试本关。';
+            : '';
         const sections = [
             fallback,
             content.message,
@@ -243,8 +259,8 @@ export class ResultPopup extends BasePanel {
 
         this.layoutNode(this.maskNode, 0, 0, this.rootWidth, this.rootHeight);
         this.layoutNode(this.panelNode, 0, 0, this.panelWidth, this.panelHeight);
-        this.drawRoundedRect(this.maskNode, this.rootWidth, this.rootHeight, new Color(0, 0, 0, 190), 0);
-        this.drawRoundedRect(this.panelNode, this.panelWidth, this.panelHeight, new Color(245, 248, 246, 255), 8, new Color(178, 194, 194, 255));
+        this.drawRoundedRect(this.maskNode, this.rootWidth, this.rootHeight, UI_THEME.overlay, 0);
+        this.drawRoundedRect(this.panelNode, this.panelWidth, this.panelHeight, UI_THEME.panelRaised, 24, UI_THEME.outlineBright);
 
         const backgroundNode = this.windowBackgroundSprite?.node ?? null;
         if (backgroundNode) {
@@ -254,10 +270,40 @@ export class ResultPopup extends BasePanel {
         }
 
         this.layoutNode(this.resultStateBarSprite?.node ?? null, 0, this.panelHeight * 0.5 - 8, this.panelWidth, 8);
-        this.layoutLabel(this.titleLabel, 0, 132, 480, 54, 36, 44);
-        this.layoutLabel(this.messageLabel, 0, 38, 460, 118, 24, 32);
-        this.layoutButton(this.primaryButton, this.primaryButtonSprite, this.primaryButtonLabel, 0, -88, 360, 72, 26);
-        this.layoutButton(this.secondaryButton, this.secondaryButtonSprite, this.secondaryButtonLabel, 0, -170, 360, 64, 24);
+        this.layoutLabel(this.titleLabel, 0, 180, 480, 56, 36, 44);
+        this.layoutNode(this.messageViewportNode, 0, 48, 476, 220);
+        this.layoutMessageContent(this.messageLabel?.string ?? '');
+        this.layoutButton(this.primaryButton, this.primaryButtonSprite, this.primaryButtonLabel, 0, -150, 380, 64, 24);
+        this.layoutButton(this.secondaryButton, this.secondaryButtonSprite, this.secondaryButtonLabel, 0, -220, 380, 56, 22);
+    }
+
+    private applyResultLayout(isSuccess: boolean): void {
+        if (isSuccess) {
+            this.layoutNode(this.panelNode, 0, 0, this.panelWidth, this.panelHeight);
+            this.layoutNode(this.windowBackgroundSprite?.node ?? null, 0, 0, this.panelWidth, this.panelHeight);
+            this.layoutNode(this.resultStateBarSprite?.node ?? null, 0, this.panelHeight * 0.5 - 8, this.panelWidth, 8);
+            this.layoutLabel(this.titleLabel, 0, 180, 480, 56, 36, 44);
+            this.layoutNode(this.messageViewportNode, 0, 48, 476, 220);
+            this.layoutButton(this.primaryButton, this.primaryButtonSprite, this.primaryButtonLabel, 0, -150, 380, 64, 24);
+            this.layoutButton(this.secondaryButton, this.secondaryButtonSprite, this.secondaryButtonLabel, 0, -220, 380, 56, 22);
+            return;
+        }
+
+        const failurePanelHeight = 340;
+        this.layoutNode(this.panelNode, 0, 0, this.panelWidth, failurePanelHeight);
+        this.layoutNode(this.windowBackgroundSprite?.node ?? null, 0, 0, this.panelWidth, failurePanelHeight);
+        this.layoutNode(this.resultStateBarSprite?.node ?? null, 0, failurePanelHeight * 0.5 - 8, this.panelWidth, 8);
+        this.layoutLabel(this.titleLabel, 0, 92, 492, 64, 36, 44);
+        this.layoutButton(this.primaryButton, this.primaryButtonSprite, this.primaryButtonLabel, 0, -34, 380, 64, 24);
+        this.layoutButton(this.secondaryButton, this.secondaryButtonSprite, this.secondaryButtonLabel, 0, -112, 380, 56, 22);
+
+        if (this.messageViewportNode) {
+            this.messageViewportNode.active = false;
+        }
+
+        if (this.messageContentNode) {
+            this.messageContentNode.active = false;
+        }
     }
 
     private ensureStructure(): void {
@@ -269,17 +315,35 @@ export class ResultPopup extends BasePanel {
         this.panelNode.name = 'Panel';
         this.panelNode.setParent(this.node, false);
 
+        this.messageViewportNode = this.ensureChild(this.panelNode, 'MessageViewport');
+        this.messageViewportNode.name = 'MessageViewport';
+        this.messageContentNode = this.ensureChild(this.messageViewportNode, 'MessageContent');
+        this.messageContentNode.name = 'MessageContent';
+        this.ensureTransform(this.messageViewportNode, 476, 220);
+        this.ensureTransform(this.messageContentNode, 476, 220);
+        this.messageScrollView = this.messageViewportNode.getComponent(ScrollView) ?? this.messageViewportNode.addComponent(ScrollView);
+        if (this.messageScrollView.content !== this.messageContentNode) {
+            this.messageScrollView.content = this.messageContentNode;
+        }
+        this.messageScrollView.horizontal = false;
+        this.messageScrollView.vertical = true;
+        this.messageScrollView.inertia = true;
+        this.messageViewportNode.getComponent(Mask) ?? this.messageViewportNode.addComponent(Mask);
+
         this.reparent(this.windowBackgroundSprite?.node ?? null, this.panelNode);
         this.reparent(this.resultStateBarSprite?.node ?? null, this.panelNode);
         this.reparent(this.titleLabel?.node ?? null, this.panelNode);
         this.reparent(this.stateLabel?.node ?? null, this.panelNode);
-        this.reparent(this.messageLabel?.node ?? null, this.panelNode);
+        this.reparent(this.messageViewportNode, this.panelNode);
+        this.reparent(this.messageContentNode, this.messageViewportNode);
+        this.reparent(this.messageLabel?.node ?? null, this.messageContentNode);
         this.reparent(this.primaryButton?.node ?? null, this.panelNode);
         this.reparent(this.secondaryButton?.node ?? null, this.panelNode);
 
         this.maskNode.setSiblingIndex(0);
         this.panelNode.setSiblingIndex(1);
         this.windowBackgroundSprite?.node.setSiblingIndex(0);
+        this.messageViewportNode.setSiblingIndex(3);
     }
 
     private ensureChild(parent: Node, name: string): Node {
@@ -339,38 +403,73 @@ export class ResultPopup extends BasePanel {
 
         this.layoutNode(button.node, x, y, width, height);
         this.layoutNode(sprite?.node ?? null, 0, 0, width, height);
-        this.layoutLabel(label, 0, 0, width - 32, height - 14, fontSize, fontSize + 8);
+        this.layoutLabel(label, 0, 0, width - 32, height - 14, fontSize, fontSize + 10);
         button.interactable = true;
     }
 
     private applyPopupTheme(isSuccess: boolean): void {
-        this.drawRoundedRect(this.windowBackgroundSprite?.node ?? null, this.panelWidth, this.panelHeight, new Color(245, 248, 246, 255), 8, new Color(178, 194, 194, 255));
-        this.drawRoundedRect(this.primaryButtonSprite?.node ?? this.primaryButton?.node ?? null, 360, 72, isSuccess ? new Color(30, 148, 114, 255) : new Color(197, 72, 78, 255), 8);
-        this.drawRoundedRect(this.secondaryButtonSprite?.node ?? this.secondaryButton?.node ?? null, 360, 64, new Color(216, 224, 224, 255), 8, new Color(136, 150, 154, 255));
+        const panelHeight = isSuccess ? this.panelHeight : 340;
+        this.drawRoundedRect(this.panelNode, this.panelWidth, panelHeight, isSuccess ? UI_THEME.panelRaised : UI_THEME.buttonDanger, 24, isSuccess ? UI_THEME.outlineBright : UI_THEME.warning);
+        this.drawRoundedRect(this.windowBackgroundSprite?.node ?? null, this.panelWidth, panelHeight, isSuccess ? UI_THEME.panelRaised : UI_THEME.buttonDanger, 24, isSuccess ? UI_THEME.outlineBright : UI_THEME.warning);
+        this.drawRoundedRect(this.primaryButtonSprite?.node ?? this.primaryButton?.node ?? null, 380, 64, isSuccess ? UI_THEME.buttonPrimary : UI_THEME.warning, 18, UI_THEME.outline);
+        this.drawRoundedRect(this.secondaryButtonSprite?.node ?? this.secondaryButton?.node ?? null, 380, 56, UI_THEME.buttonSecondary, 18, UI_THEME.outline);
 
         if (this.dimMaskSprite) {
-            this.dimMaskSprite.color = new Color(0, 0, 0, 190);
+            this.dimMaskSprite.color = UI_THEME.overlay;
         }
 
         if (this.titleLabel) {
-            this.titleLabel.color = new Color(20, 32, 38, 255);
+            this.titleLabel.color = isSuccess ? UI_THEME.textTitle : UI_THEME.warning;
         }
 
         if (this.stateLabel) {
-            this.stateLabel.color = isSuccess ? new Color(20, 130, 93, 255) : new Color(176, 50, 56, 255);
+            this.stateLabel.color = isSuccess ? UI_THEME.success : UI_THEME.warning;
         }
 
         if (this.messageLabel) {
-            this.messageLabel.color = new Color(48, 60, 66, 255);
+            this.messageLabel.color = UI_THEME.textPrimary;
         }
 
         if (this.primaryButtonLabel) {
-            this.primaryButtonLabel.color = new Color(255, 255, 255, 255);
+            this.primaryButtonLabel.color = isSuccess ? UI_THEME.textTitle : UI_THEME.background;
         }
 
         if (this.secondaryButtonLabel) {
-            this.secondaryButtonLabel.color = new Color(36, 48, 54, 255);
+            this.secondaryButtonLabel.color = UI_THEME.textTitle;
         }
+    }
+
+    private layoutMessageContent(text: string): void {
+        const viewportWidth = 476;
+        const viewportHeight = 220;
+        const labelWidth = 444;
+        const labelFontSize = 23;
+        const labelLineHeight = 32;
+        const contentHeight = this.calculateBodyHeight(text, labelWidth, labelFontSize, labelLineHeight, viewportHeight);
+
+        this.layoutNode(this.messageContentNode, 0, (viewportHeight - contentHeight) * 0.5, viewportWidth, contentHeight);
+        this.layoutLabel(this.messageLabel, 0, 0, labelWidth, contentHeight, labelFontSize, labelLineHeight);
+
+        if (this.messageLabel) {
+            this.messageLabel.overflow = Label.Overflow.RESIZE_HEIGHT;
+            this.messageLabel.horizontalAlign = HorizontalTextAlignment.LEFT;
+            this.messageLabel.verticalAlign = VerticalTextAlignment.TOP;
+            this.messageLabel.color = UI_THEME.textPrimary;
+        }
+    }
+
+    private calculateBodyHeight(text: string, width: number, fontSize: number, lineHeight: number, minimumHeight: number): number {
+        const charactersPerLine = Math.max(12, Math.floor(width / (fontSize * 0.95)));
+        const paragraphs = text.split('\n');
+        const lineCount = paragraphs.reduce((total, paragraph) => {
+            if (paragraph.length === 0) {
+                return total + 1;
+            }
+
+            return total + Math.max(1, Math.ceil(paragraph.length / charactersPerLine));
+        }, 0);
+
+        return Math.max(minimumHeight, lineCount * lineHeight + 18);
     }
 
     private drawRoundedRect(node: Node | null, width: number, height: number, fillColor: Color, radius: number, strokeColor?: Color): void {
@@ -389,23 +488,13 @@ export class ResultPopup extends BasePanel {
         }
 
         graphics.strokeColor = strokeColor;
-        graphics.lineWidth = 2;
+        graphics.lineWidth = 4;
         graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
         graphics.stroke();
     }
 
     private normalizeText(text: string): string {
-        return this.truncateText(text.replace(/\s+/g, ' ').trim(), 54);
-    }
-
-    private truncateText(text: string, maxLength: number): string {
-        const normalized = text.replace(/\s+/g, ' ').trim();
-
-        if (normalized.length <= maxLength) {
-            return normalized;
-        }
-
-        return `${normalized.slice(0, maxLength)}...`;
+        return text.replace(/\s+/g, ' ').trim();
     }
 
     private bringToFront(node: Node): void {

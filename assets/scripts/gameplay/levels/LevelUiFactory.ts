@@ -8,6 +8,7 @@ import {
     Vec3,
     VerticalTextAlignment,
 } from 'cc';
+import { UI_THEME } from '../../ui/theme/UITheme';
 
 export interface LevelButtonHandle {
     node: Node;
@@ -36,9 +37,9 @@ function drawRoundedRect(
     width: number,
     height: number,
     fillColor: Color,
-    radius: number = 8,
+    radius: number = 16,
     strokeColor?: Color,
-    lineWidth: number = 2,
+    lineWidth: number = 4,
 ): void {
     graphics.clear();
     graphics.fillColor = fillColor;
@@ -114,7 +115,7 @@ export function createLevelPanel(
     ensureTransform(node, width, height);
 
     const graphics = node.addComponent(Graphics);
-    drawRoundedRect(graphics, width, height, color, 8, new Color(96, 118, 132, 255));
+    drawRoundedRect(graphics, width, height, color, 16, UI_THEME.outline);
     return node;
 }
 
@@ -162,7 +163,7 @@ export function createLevelButton(
     const graphics = node.addComponent(Graphics);
     drawRoundedRect(graphics, width, height, color);
 
-    const label = createTextLabel(node, `${name}Label`, text, width - 18, height - 12, 24, new Color(244, 252, 248, 255), 0, 0);
+    const label = createTextLabel(node, `${name}Label`, text, width - 18, height - 12, 24, UI_THEME.textTitle, 0, 0);
     label.overflow = Label.Overflow.SHRINK;
 
     return {
@@ -172,7 +173,7 @@ export function createLevelButton(
             label.string = value;
         },
         setColor: (value: Color) => {
-            drawRoundedRect(graphics, width, height, value, 8, new Color(116, 136, 148, 255));
+            drawRoundedRect(graphics, width, height, value, 18, UI_THEME.outline);
         },
         setPosition: (nextX: number, nextY: number) => {
             node.setPosition(new Vec3(nextX, nextY, 0));
@@ -204,7 +205,7 @@ export function createSelectableLevelCard(
         width - 18,
         30,
         17,
-        new Color(244, 252, 248, 255),
+        UI_THEME.textTitle,
         0,
         height * 0.5 - 23,
     );
@@ -218,7 +219,7 @@ export function createSelectableLevelCard(
         width - 18,
         height - 48,
         13,
-        new Color(188, 206, 210, 255),
+        UI_THEME.textMuted,
         0,
         -6,
     );
@@ -230,13 +231,13 @@ export function createSelectableLevelCard(
             graphics,
             width,
             height,
-            selected ? new Color(48, 112, 84, 255) : new Color(50, 62, 74, 255),
-            8,
-            selected ? new Color(92, 244, 178, 255) : new Color(116, 136, 148, 255),
-            selected ? 3 : 2,
+            selected ? UI_THEME.buttonPrimary : UI_THEME.panelRaised,
+            16,
+            selected ? UI_THEME.accent : UI_THEME.outline,
+            selected ? 5 : 4,
         );
-        titleLabel.color = selected ? new Color(244, 252, 248, 255) : new Color(220, 232, 228, 255);
-        descriptionLabel.color = selected ? new Color(214, 232, 226, 255) : new Color(150, 168, 172, 255);
+        titleLabel.color = selected ? UI_THEME.textTitle : UI_THEME.textPrimary;
+        descriptionLabel.color = selected ? UI_THEME.textTitle : UI_THEME.textMuted;
     };
 
     applyStyle(false);

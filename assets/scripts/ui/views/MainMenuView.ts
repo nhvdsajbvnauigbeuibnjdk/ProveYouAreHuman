@@ -21,13 +21,14 @@ import {
     applyLabelTone,
     applyMutedPanelStyle,
     applyPanelStyle,
+    UI_THEME,
 } from '../theme/UITheme';
 
 const { ccclass, property } = _decorator;
 const MENU_WIDTH = 720;
 const MENU_HEIGHT = 1280;
-const CARD_WIDTH = 600;
-const CARD_HEIGHT = 720;
+const CARD_WIDTH = 620;
+const CARD_HEIGHT = 760;
 
 export interface MainMenuActions {
     onStart: () => void;
@@ -85,6 +86,9 @@ export class MainMenuView extends BasePanel {
     private backgroundNode: Node | null = null;
     private centerPanelNode: Node | null = null;
     private progressNode: Node | null = null;
+    private levelMetricNode: Node | null = null;
+    private humanMetricNode: Node | null = null;
+    private failureMetricNode: Node | null = null;
 
     protected onLoad(): void {
         this.applyTheme();
@@ -108,15 +112,15 @@ export class MainMenuView extends BasePanel {
         const humanIndex = calculateHumanIndex(saveData);
 
         if (this.currentLevelValueLabel) {
-            this.currentLevelValueLabel.string = `${formatLevelCode(saveData.selectedLevelId)} / 共 ${levelCount} 关`;
+            this.currentLevelValueLabel.string = `${formatLevelCode(saveData.selectedLevelId)}\n共 ${levelCount} 关`;
         }
 
         if (this.humanIndexValueLabel) {
-            this.humanIndexValueLabel.string = `${humanIndex} / ${getHumanIndexRank(humanIndex)}`;
+            this.humanIndexValueLabel.string = `${humanIndex}\n${getHumanIndexRank(humanIndex)}`;
         }
 
         if (this.failureCountValueLabel) {
-            this.failureCountValueLabel.string = `${saveData.stats.totalFailures}`;
+            this.failureCountValueLabel.string = `失败\n${saveData.stats.totalFailures}`;
         }
 
         if (this.systemNoticeLabel) {
@@ -153,28 +157,31 @@ export class MainMenuView extends BasePanel {
         this.node.setPosition(new Vec3(0, 0, 0));
         this.ensureStructure();
 
-        this.layoutPanel(this.backgroundNode, 0, 0, MENU_WIDTH, MENU_HEIGHT, new Color(18, 26, 36, 255), undefined, 0);
-        this.layoutNode(this.centerPanelNode, 0, -10, CARD_WIDTH, CARD_HEIGHT);
-        this.drawRoundedRect(this.centerPanelNode, CARD_WIDTH, CARD_HEIGHT, new Color(48, 60, 72, 248), 8, new Color(86, 106, 124, 255));
-        this.layoutPanel(this.panelBackgroundSprite?.node ?? null, 0, 0, CARD_WIDTH, CARD_HEIGHT, new Color(48, 60, 72, 248), new Color(86, 106, 124, 255));
-        this.layoutPanel(this.panelAccentLineSprite?.node ?? null, 0, 330, CARD_WIDTH - 56, 6, new Color(79, 224, 163, 255));
+        this.layoutPanel(this.backgroundNode, 0, 0, MENU_WIDTH, MENU_HEIGHT, UI_THEME.background, undefined, 0);
+        this.layoutNode(this.centerPanelNode, 0, -8, CARD_WIDTH, CARD_HEIGHT);
+        this.drawRoundedRect(this.centerPanelNode, CARD_WIDTH, CARD_HEIGHT, UI_THEME.panelRaised, 24, UI_THEME.outlineBright);
+        this.layoutPanel(this.panelBackgroundSprite?.node ?? null, 0, 0, CARD_WIDTH, CARD_HEIGHT, UI_THEME.panelRaised, UI_THEME.outlineBright, 24);
+        this.layoutPanel(this.panelAccentLineSprite?.node ?? null, 0, 338, CARD_WIDTH - 64, 10, UI_THEME.accent, UI_THEME.outline, 8);
 
-        this.layoutLabel(this.titleLabel, 0, 240, 520, 58, 40, 48, 'title');
-        this.layoutLabel(this.subtitleLabel, 0, 186, 520, 36, 24, 30, 'muted');
-        this.layoutNode(this.progressNode, 0, 36, 500, 220);
-        this.layoutPanel(this.noticePanelSprite?.node ?? null, 0, 0, 500, 220, new Color(34, 44, 56, 244), new Color(79, 224, 163, 140));
-        this.layoutLabel(this.currentLevelValueLabel, 0, 62, 460, 32, 22, 28, 'success');
-        this.layoutLabel(this.humanIndexValueLabel, 0, 18, 460, 32, 22, 28, 'success');
-        this.layoutLabel(this.failureCountValueLabel, 0, -26, 460, 32, 22, 28, 'danger');
-        this.layoutLabel(this.systemNoticeLabel, 0, -86, 440, 62, 20, 28, 'muted');
-        this.layoutButton(this.startVerifyButton, this.startVerifyButtonSprite, this.startVerifyButtonLabel, 0, -210, 360, 72, 26);
-        this.layoutButton(this.openSettingsButton, this.openSettingsButtonSprite, this.openSettingsButtonLabel, 0, -300, 360, 64, 24);
+        this.layoutLabel(this.titleLabel, 0, 250, 540, 62, 42, 50, 'title');
+        this.layoutLabel(this.subtitleLabel, 0, 198, 540, 34, 22, 28, 'muted');
+        this.layoutNode(this.progressNode, 0, 52, 540, 246);
+        this.layoutMetric(this.levelMetricNode, this.currentLevelValueLabel, -178, 62, 164, 76, 'success');
+        this.layoutMetric(this.humanMetricNode, this.humanIndexValueLabel, 0, 62, 164, 76, 'success');
+        this.layoutMetric(this.failureMetricNode, this.failureCountValueLabel, 178, 62, 164, 76, 'danger');
+        this.layoutPanel(this.noticePanelSprite?.node ?? null, 0, -54, 540, 112, UI_THEME.panelMuted, UI_THEME.accent, 18);
+        this.layoutLabel(this.systemNoticeLabel, 0, -54, 492, 74, 20, 28, 'muted');
+        this.layoutButton(this.startVerifyButton, this.startVerifyButtonSprite, this.startVerifyButtonLabel, 0, -220, 420, 76, 28);
+        this.layoutButton(this.openSettingsButton, this.openSettingsButtonSprite, this.openSettingsButtonLabel, 0, -310, 420, 60, 22);
     }
 
     private ensureStructure(): void {
         this.backgroundNode = this.ensureChild(this.node, 'Background');
         this.centerPanelNode = this.ensureChild(this.node, 'CenterPanel');
         this.progressNode = this.ensureChild(this.centerPanelNode, 'Progress');
+        this.levelMetricNode = this.ensureChild(this.progressNode, 'LevelMetric');
+        this.humanMetricNode = this.ensureChild(this.progressNode, 'HumanMetric');
+        this.failureMetricNode = this.ensureChild(this.progressNode, 'FailureMetric');
 
         this.reparent(this.panelBackgroundSprite?.node ?? null, this.centerPanelNode);
         this.reparent(this.panelAccentLineSprite?.node ?? null, this.centerPanelNode);
@@ -182,9 +189,12 @@ export class MainMenuView extends BasePanel {
         this.reparent(this.subtitleLabel?.node ?? null, this.centerPanelNode);
         this.reparent(this.progressNode, this.centerPanelNode);
         this.reparent(this.noticePanelSprite?.node ?? null, this.progressNode);
-        this.reparent(this.currentLevelValueLabel?.node ?? null, this.progressNode);
-        this.reparent(this.humanIndexValueLabel?.node ?? null, this.progressNode);
-        this.reparent(this.failureCountValueLabel?.node ?? null, this.progressNode);
+        this.reparent(this.levelMetricNode, this.progressNode);
+        this.reparent(this.humanMetricNode, this.progressNode);
+        this.reparent(this.failureMetricNode, this.progressNode);
+        this.reparent(this.currentLevelValueLabel?.node ?? null, this.levelMetricNode);
+        this.reparent(this.humanIndexValueLabel?.node ?? null, this.humanMetricNode);
+        this.reparent(this.failureCountValueLabel?.node ?? null, this.failureMetricNode);
         this.reparent(this.systemNoticeLabel?.node ?? null, this.progressNode);
         this.reparent(this.startVerifyButton?.node ?? null, this.centerPanelNode);
         this.reparent(this.openSettingsButton?.node ?? null, this.centerPanelNode);
@@ -193,6 +203,15 @@ export class MainMenuView extends BasePanel {
         this.centerPanelNode.setSiblingIndex(this.node.children.length - 1);
         this.panelBackgroundSprite?.node.setSiblingIndex(0);
         this.noticePanelSprite?.node.setSiblingIndex(0);
+    }
+
+    private layoutMetric(node: Node | null, label: Label | null, x: number, y: number, width: number, height: number, tone: 'success' | 'danger'): void {
+        if (!node) {
+            return;
+        }
+
+        this.layoutPanel(node, x, y, width, height, UI_THEME.panelMuted, tone === 'success' ? UI_THEME.accent : UI_THEME.danger, 18);
+        this.layoutLabel(label, 0, 0, width - 22, height - 18, 19, 26, tone);
     }
 
     private ensureChild(parent: Node, name: string): Node {
@@ -269,7 +288,7 @@ export class MainMenuView extends BasePanel {
         button.node.active = true;
         button.node.setPosition(new Vec3(x, y, 0));
         this.ensureTransform(button.node, width, height);
-        this.layoutPanel(sprite?.node ?? button.node, sprite ? 0 : x, sprite ? 0 : y, width, height, sprite ? sprite.color : new Color(48, 136, 97, 255));
+        this.layoutPanel(sprite?.node ?? button.node, sprite ? 0 : x, sprite ? 0 : y, width, height, sprite ? sprite.color : UI_THEME.buttonPrimary, UI_THEME.outline, 18);
 
         if (label) {
             label.node.setPosition(new Vec3(0, 0, 0));
@@ -303,7 +322,7 @@ export class MainMenuView extends BasePanel {
         }
 
         graphics.strokeColor = strokeColor;
-        graphics.lineWidth = 2;
+        graphics.lineWidth = 4;
         graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
         graphics.stroke();
     }
@@ -314,15 +333,15 @@ export class MainMenuView extends BasePanel {
         }
 
         if (this.subtitleLabel) {
-            this.subtitleLabel.string = '荒诞人类验证原型';
+            this.subtitleLabel.string = '请认真配合这套不太聪明的系统';
         }
 
         if (this.startVerifyButtonLabel) {
-            this.startVerifyButtonLabel.string = '开始验证';
+            this.startVerifyButtonLabel.string = '开始装人类';
         }
 
         if (this.openSettingsButtonLabel) {
-            this.openSettingsButtonLabel.string = '设置';
+            this.openSettingsButtonLabel.string = '系统旋钮';
         }
     }
 

@@ -19,7 +19,7 @@ import {
     applyButtonTheme,
     applyLabelTone,
     applyMaskStyle,
-    applyPanelStyle,
+    UI_THEME,
 } from '../theme/UITheme';
 
 const { ccclass, property } = _decorator;
@@ -256,7 +256,6 @@ export class SettingsPopup extends BasePanel {
 
     private applyTheme(): void {
         applyMaskStyle(this.dimMaskSprite);
-        applyPanelStyle(this.windowBackgroundSprite, true);
         applyLabelTone(this.titleLabel, 'title');
         applyLabelTone(this.soundStateValueLabel, 'success');
         applyLabelTone(this.bgmValueLabel, 'success');
@@ -284,29 +283,29 @@ export class SettingsPopup extends BasePanel {
         this.bringToFront(this.node);
         this.ensureStructure();
 
-        this.layoutPanel(this.maskNode, 0, 0, ROOT_WIDTH, ROOT_HEIGHT, new Color(0, 0, 0, 190), 0);
+        this.layoutPanel(this.maskNode, 0, 0, ROOT_WIDTH, ROOT_HEIGHT, UI_THEME.overlay, 0);
         this.layoutNode(this.panelNode, 0, 0, PANEL_WIDTH, PANEL_HEIGHT);
-        this.drawRoundedRect(this.panelNode, PANEL_WIDTH, PANEL_HEIGHT, new Color(245, 248, 246, 255), 8, new Color(178, 194, 194, 255));
+        this.drawRoundedRect(this.panelNode, PANEL_WIDTH, PANEL_HEIGHT, UI_THEME.panelRaised, 24, UI_THEME.outlineBright);
         this.layoutNode(this.contentNode, 0, 12, PANEL_WIDTH, 356);
 
         if (this.windowBackgroundSprite?.node) {
             this.windowBackgroundSprite.node.active = true;
             this.windowBackgroundSprite.node.setPosition(new Vec3(0, 0, 0));
-            this.drawRoundedRect(this.windowBackgroundSprite.node, PANEL_WIDTH, PANEL_HEIGHT, new Color(245, 248, 246, 255), 8, new Color(178, 194, 194, 255));
+            this.drawRoundedRect(this.windowBackgroundSprite.node, PANEL_WIDTH, PANEL_HEIGHT, UI_THEME.panelRaised, 24, UI_THEME.outlineBright);
         }
 
-        this.layoutLabel(this.titleLabel, 0, 202, 460, 54, 34, 42, new Color(20, 32, 38, 255));
-        this.layoutLabel(this.soundStateValueLabel, -105, 122, 230, 34, 22, 30, new Color(38, 56, 64, 255));
+        this.layoutLabel(this.titleLabel, 0, 202, 460, 54, 34, 42, UI_THEME.textTitle);
+        this.layoutLabel(this.soundStateValueLabel, -105, 122, 230, 34, 22, 30, UI_THEME.textPrimary);
         this.layoutButton(this.toggleSoundButton, this.toggleSoundButtonSprite, this.toggleSoundButtonLabel, 158, 122, 190, 52, 20, 'secondary');
-        this.layoutLabel(this.bgmValueLabel, -122, 62, 210, 34, 22, 30, new Color(38, 56, 64, 255));
+        this.layoutLabel(this.bgmValueLabel, -122, 62, 210, 34, 22, 30, UI_THEME.textPrimary);
         this.layoutButton(this.bgmDownButton, this.bgmDownButtonSprite, this.bgmDownButtonLabel, 86, 62, 92, 50, 18, 'secondary');
         this.layoutButton(this.bgmUpButton, this.bgmUpButtonSprite, this.bgmUpButtonLabel, 196, 62, 92, 50, 18, 'secondary');
-        this.layoutLabel(this.sfxValueLabel, -122, 2, 210, 34, 22, 30, new Color(38, 56, 64, 255));
+        this.layoutLabel(this.sfxValueLabel, -122, 2, 210, 34, 22, 30, UI_THEME.textPrimary);
         this.layoutButton(this.sfxDownButton, this.sfxDownButtonSprite, this.sfxDownButtonLabel, 86, 2, 92, 50, 18, 'secondary');
         this.layoutButton(this.sfxUpButton, this.sfxUpButtonSprite, this.sfxUpButtonLabel, 196, 2, 92, 50, 18, 'secondary');
-        this.layoutLabel(this.vibrationStateValueLabel, -105, -58, 230, 34, 22, 30, new Color(38, 56, 64, 255));
+        this.layoutLabel(this.vibrationStateValueLabel, -105, -58, 230, 34, 22, 30, UI_THEME.textPrimary);
         this.layoutButton(this.toggleVibrationButton, this.toggleVibrationButtonSprite, this.toggleVibrationButtonLabel, 158, -58, 190, 52, 20, 'secondary');
-        this.layoutLabel(this.resetHintLabel, 0, -118, 440, 34, 18, 24, new Color(96, 112, 118, 255));
+        this.layoutLabel(this.resetHintLabel, 0, -118, 440, 34, 18, 24, UI_THEME.textMuted);
         this.layoutButton(this.resetProgressButton, this.resetProgressButtonSprite, this.resetProgressButtonLabel, 0, -170, 260, 56, 20, 'danger');
         this.layoutButton(this.closeButton, this.closeButtonSprite, this.closeButtonLabel, 0, -226, 360, 64, 24, 'primary');
     }
@@ -423,18 +422,16 @@ export class SettingsPopup extends BasePanel {
         this.ensureTransform(button.node, width, height);
 
         const fillColor = tone === 'primary'
-            ? new Color(30, 148, 114, 255)
+            ? UI_THEME.buttonPrimary
             : tone === 'danger'
-                ? new Color(197, 72, 78, 255)
-                : new Color(216, 224, 224, 255);
-        const labelColor = tone === 'secondary'
-            ? new Color(36, 48, 54, 255)
-            : new Color(255, 255, 255, 255);
+                ? UI_THEME.buttonDanger
+                : UI_THEME.buttonSecondary;
+        const labelColor = UI_THEME.textTitle;
 
         const backgroundNode = sprite?.node ?? button.node;
         backgroundNode.active = true;
         backgroundNode.setPosition(new Vec3(sprite ? 0 : x, sprite ? 0 : y, 0));
-        this.drawRoundedRect(backgroundNode, width, height, fillColor, 8, tone === 'secondary' ? new Color(136, 150, 154, 255) : undefined);
+        this.drawRoundedRect(backgroundNode, width, height, fillColor, 18, UI_THEME.outline);
         applyButtonTheme(button, sprite, label, tone);
 
         if (!label) {
@@ -472,7 +469,7 @@ export class SettingsPopup extends BasePanel {
         }
 
         graphics.strokeColor = strokeColor;
-        graphics.lineWidth = 2;
+        graphics.lineWidth = 4;
         graphics.roundRect(-width * 0.5, -height * 0.5, width, height, radius);
         graphics.stroke();
     }
@@ -489,7 +486,7 @@ export class SettingsPopup extends BasePanel {
 
     private syncStaticText(): void {
         if (this.titleLabel) {
-            this.titleLabel.string = '系统设置';
+            this.titleLabel.string = '系统旋钮';
         }
 
         if (this.bgmDownButtonLabel) {
@@ -513,7 +510,7 @@ export class SettingsPopup extends BasePanel {
         }
 
         if (this.closeButtonLabel) {
-            this.closeButtonLabel.string = '关闭';
+            this.closeButtonLabel.string = '收工';
         }
 
         if (this.resetHintLabel) {
